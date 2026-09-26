@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { getUserTrips } from "@/lib/tripService";
+import Link from "next/link";
+
+
 
 export default function TripsPage() {
   const { user, loading } = useAuth();
@@ -34,9 +37,24 @@ export default function TripsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold">
-        My Trips
-      </h1>
+     <div className="flex items-center justify-between">
+  <div>
+    <h1 className="text-3xl font-bold">
+      My Trips
+    </h1>
+
+    <p className="mt-2 text-gray-600">
+      Manage your travel plans.
+    </p>
+  </div>
+
+  <Link
+    href="/trips/new"
+    className="rounded-lg bg-black px-5 py-3 text-sm font-medium text-white hover:bg-gray-800"
+  >
+    + Create Trip
+  </Link>
+</div>
 
       <p className="mt-2 text-gray-600">
         Logged in as {user.email}
