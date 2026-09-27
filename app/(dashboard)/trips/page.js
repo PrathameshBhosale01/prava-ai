@@ -66,20 +66,22 @@ export default function TripsPage() {
             No trips yet.
           </p>
         ) : (
-          trips.map((trip) => (
-            <div
-              key={trip.id}
-              className="mb-3 rounded-lg border bg-white p-4"
-            >
-              <h2 className="font-semibold">
-                {trip.title}
-              </h2>
+        trips.map((trip) => (
+          <Link
+            key={trip.id}
+            href={`/trips/${trip.id}`}
+            className="mb-3 block rounded-lg border bg-white p-4 transition hover:shadow-md"
+          >
+            <h2 className="font-semibold">
+              {trip.title}
+            </h2>
 
-              <p className="text-sm text-gray-600">
-                {trip.destination}
-              </p>
-            </div>
-          ))
+            <p className="text-sm text-gray-600">
+              {trip.destination}
+            </p>
+          </Link>
+        ))
+
         )}
       </div>
     </div>
