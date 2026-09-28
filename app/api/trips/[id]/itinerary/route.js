@@ -87,16 +87,35 @@ export async function POST(request, { params }) {
     // 6. Call Gemini
     // --------------------------------
 
-    const response =
-      await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: {
-          responseMimeType:
-            "application/json",
-        },
-      });
+   const MODELS = [
+  process.env.GEMINI_MODEL || "gemini-3.8-flash",
+  "gemini-3.5-flash-lite", // fallback if the main one is overloaded
+];
 
+let response;
+let lastError;
+
+for (const model of MODELS) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: { responseMimeType: "application/json" },
+      });
+      break;
+    } catch (err) {
+      lastError = err;
+      const retryable = err.status === 503 || err.status === 429;
+      if (!retryable) throw err;
+      // 1s, 2s, 4s backoff
+      await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+    }
+  }
+  if (response) break;
+}
+
+if (!response) throw lastError;
     // --------------------------------
     // 7. Parse AI response
     // --------------------------------
