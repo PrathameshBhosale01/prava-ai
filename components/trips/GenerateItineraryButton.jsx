@@ -1,48 +1,71 @@
 "use client";
 
 import { useState } from "react";
+import { auth } from "@/lib/firebase";
 
 export default function GenerateItineraryButton({
   tripId,
+  onGenerated,
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleGenerate = async () => {
+    const handleGenerate = async () => {
     try {
-      setLoading(true);
-      setError("");
+        setLoading(true);
+        setError("");
 
-      const response = await fetch(
+        const currentUser = auth.currentUser;
+
+        if (!currentUser) {
+        throw new Error("Please log in first.");
+        }
+
+        const token =
+        await currentUser.getIdToken();
+
+        const response = await fetch(
         `/api/trips/${tripId}/itinerary`,
         {
-          method: "POST",
+            method: "POST",
+            headers: {
+            Authorization: `Bearer ${token}`,
+            },
         }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.error || "Failed to generate itinerary"
         );
-      }
 
-      console.log("Generated itinerary:", data.itinerary);
+        const data = await response.json();
 
-      alert("Itinerary generated successfully!");
+        if (!response.ok) {
+        throw new Error(
+            data.error ||
+            "Failed to generate itinerary"
+        );
+        }
+
+        console.log(
+        "Generated itinerary:",
+        data.itinerary
+        );
+
+        alert(
+        "Itinerary generated successfully!"
+        );
+
+        if (onGenerated) {
+          onGenerated(data.itinerary);
+        }
     } catch (error) {
-      console.error(error);
+        console.error(error);
 
-      setError(
+        setError(
         error.message ||
-          "Failed to generate itinerary."
-      );
+            "Failed to generate itinerary."
+        );
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
-
+    };
   return (
     <div>
       <button
