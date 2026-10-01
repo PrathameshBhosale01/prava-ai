@@ -14,10 +14,10 @@ const menus = [
     name: "Services",
     href: "#features",
   },
-  {
-    name: "How It Works",
-    href: "#how-it-works",
-  },
+{
+  name: "How It Works",
+  href: "#htw",
+},
   {
     name: "Pricing",
     href: "#pricing",
