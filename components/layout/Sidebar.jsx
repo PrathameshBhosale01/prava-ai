@@ -10,8 +10,8 @@ const navigation = [
     href: "/trips",
   },
   {
-    name: "Explore",
-    href: "/explore",
+    name: "Discover",
+    href: "/discover",
   },
   {
     name: "AI Assistant",

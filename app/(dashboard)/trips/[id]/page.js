@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import { getTrip } from "@/lib/tripService";
 import GenerateItineraryButton from "@/components/trips/GenerateItineraryButton";
 import WeatherForecast from "@/components/trips/WeatherForecast";
+import CurrencyConverter from "@/components/trips/CurrencyConverter";
 
 export default function TripDetailsPage() {
   const params = useParams();
@@ -113,13 +114,23 @@ export default function TripDetailsPage() {
           <p className="mt-1 text-xl font-semibold">{trip.startDate}</p>
         </div>
       </div>
-      
+
       {/* Weather */}
       <WeatherForecast
         destination={trip.destination}
         startDate={trip.startDate}
         duration={trip.duration}
       />
+      
+       {/* Currency */}
+      <CurrencyConverter
+        destination={trip.destination}
+        from={trip.currency}
+        amount={trip.budget}
+        travelers={trip.travelers}
+        duration={trip.duration}
+      />
+
       {/* Generate AI Itinerary */}
       <GenerateItineraryButton
         tripId={trip.id}
