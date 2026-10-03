@@ -5,6 +5,7 @@ import HTW from "@/components/Marketing/HTW";
 import Pricing from "@/components/Marketing/Pricing";
 import AboutSection from "@/components/Marketing/AboutSection";
 import CTA from "@/components/Marketing/CTA";
+import Footer from "@/components/Marketing/Footer";
 
 export default function Home() {
   return (
@@ -38,6 +39,7 @@ export default function Home() {
       
        <AboutSection />
           <CTA />
+           <Footer />
 
     </main>
   );
