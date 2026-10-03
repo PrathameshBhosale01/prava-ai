@@ -3,6 +3,7 @@ import Hero from "@/components/Marketing/Hero";
 import Features from "@/components/Marketing/Features";
 import HTW from "@/components/Marketing/HTW";
 import Pricing from "@/components/Marketing/Pricing";
+import AboutSection from "@/components/Marketing/AboutSection";
 
 export default function Home() {
   return (
@@ -33,6 +34,9 @@ export default function Home() {
 
         <Pricing />
       </section>
+      
+       <AboutSection />
+
     </main>
   );
 }
