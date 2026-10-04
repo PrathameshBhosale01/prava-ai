@@ -1,5 +1,6 @@
 import DashboardHero from "@/components/dashboard/DashboardHero";
 import QuickActions from "@/components/dashboard/QuickActions";
+import RecentActivity from "@/components/dashboard/RecentActivity";
 import WeatherWidget from "@/components/dashboard/WeatherWidget";
 
 export const metadata = {
@@ -12,6 +13,7 @@ export default function DashboardPage() {
       <DashboardHero />
       <QuickActions />
       <WeatherWidget />
+      <RecentActivity />
     </div>
   );
 }

@@ -147,6 +147,23 @@ if (!response) throw lastError;
       updatedAt: FieldValue.serverTimestamp(),
     });
 
+        // Best-effort activity log: never fail the request because of it.
+    try {
+      await adminDb
+        .collection("users")
+        .doc(userId)
+        .collection("activities")
+        .add({
+          action: "CREATE",
+          entity: "ITINERARY",
+          entityId: id,
+          title: String(trip.title ?? "").slice(0, 120),
+          createdAt: FieldValue.serverTimestamp(),
+        });
+    } catch (activityError) {
+      console.error("Failed to log activity:", activityError);
+    }
+
     // --------------------------------
     // 10. Return response
     // --------------------------------
