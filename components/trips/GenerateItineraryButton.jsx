@@ -71,7 +71,7 @@ export default function GenerateItineraryButton({
       <button
         onClick={handleGenerate}
         disabled={loading}
-        className="rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="rounded-lg bg-primary px-6 py-3 font-medium text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading
           ? "Generating..."

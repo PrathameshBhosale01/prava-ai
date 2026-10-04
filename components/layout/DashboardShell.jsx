@@ -54,7 +54,7 @@ export default function DashboardShell({ children }) {
 
     return (
     <WeatherProvider>
-      <div className="min-h-screen bg-background text-foreground">
+           <div className="app-shell min-h-screen bg-background text-foreground">
         <Sidebar
           mobileOpen={mobileOpen}
           desktopOpen={desktopOpen}

@@ -69,7 +69,7 @@ export default function CurrencyConverter({
     people > 0 && days > 0 ? converted / people / days : null;
 
   return (
-    <div className="rounded-xl border bg-white p-6">
+    <div className="rounded-xl border bg-surface p-6">
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-xl font-semibold">Budget Converter</h2>
 
@@ -93,11 +93,11 @@ export default function CurrencyConverter({
       </div>
 
       {status === "loading" && (
-        <p className="mt-4 text-sm text-gray-500">Loading exchange rate...</p>
+        <p className="mt-4 text-sm text-muted-foreground">Loading exchange rate...</p>
       )}
 
       {status === "error" && (
-        <p className="mt-4 text-sm text-gray-500">
+        <p className="mt-4 text-sm text-muted-foreground">
           Couldn&apos;t load the exchange rate right now.
         </p>
       )}
@@ -106,17 +106,17 @@ export default function CurrencyConverter({
         <>
           <p className="mt-4 text-2xl font-semibold">
             {money(Number(amount), from)}{" "}
-            <span className="text-gray-400">≈</span>{" "}
+            <span className="text-muted-foreground">≈</span>{" "}
             {money(converted, data.to)}
           </p>
 
           {perPersonPerDay && (
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-muted-foreground">
               About {money(perPersonPerDay, data.to)} per person per day
             </p>
           )}
 
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-muted-foreground">
             1 {from} = {formatRate(data.rate)} {data.to} · reference rate, your
             bank or money changer will be worse · Rates by Frankfurter
           </p>

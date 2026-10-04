@@ -25,18 +25,18 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center">
-      <div className="w-full max-w-md rounded-xl border bg-white p-8 shadow-sm">
-        <h1 className="text-3xl font-bold text-black">
+      <div className="w-full max-w-md rounded-xl border bg-surface p-8 shadow-sm">
+        <h1 className="text-3xl font-bold text-foreground">
           Welcome to Prava AI
         </h1>
 
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Sign in to start planning your trips.
         </p>
 
         <button
           onClick={handleGoogleLogin}
-          className="mt-6 w-full rounded-lg bg-black px-4 py-3 text-white hover:bg-gray-800"
+          className="mt-6 w-full rounded-lg bg-primary px-4 py-3 text-white hover:bg-primary-hover"
         >
           Continue with Google
         </button>

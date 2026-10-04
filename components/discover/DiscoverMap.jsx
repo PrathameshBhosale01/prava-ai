@@ -125,7 +125,7 @@ export default function DiscoverMap({ markers, line, mode, onModeChange, busy })
       <div ref={containerRef} className="absolute inset-0" />
 
       {/* Travel mode switcher */}
-      <div className="absolute left-1/2 top-3 z-[1000] flex -translate-x-1/2 items-center gap-1 rounded-full border bg-white/90 px-2 py-1.5 shadow-lg backdrop-blur-sm">
+      <div className="absolute left-1/2 top-3 z-[1000] flex -translate-x-1/2 items-center gap-1 rounded-full border bg-surface/90 px-2 py-1.5 shadow-lg backdrop-blur-sm">
         {TRAVEL_MODES.map((m) => {
           const active = m.id === mode.id;
           return (
@@ -136,7 +136,7 @@ export default function DiscoverMap({ markers, line, mode, onModeChange, busy })
               aria-pressed={active}
               title={m.label}
               className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold transition ${
-                active ? "text-white shadow-md" : "text-gray-600 hover:bg-gray-100"
+                active ? "text-white shadow-md" : "text-muted-foreground hover:bg-surface-muted"
               }`}
               style={active ? { background: m.color } : undefined}
             >
@@ -148,7 +148,7 @@ export default function DiscoverMap({ markers, line, mode, onModeChange, busy })
       </div>
 
       {busy && (
-        <div className="absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-2 rounded-full border bg-white/90 px-4 py-2 text-xs font-medium text-gray-700 shadow-lg backdrop-blur-sm">
+        <div className="absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-2 rounded-full border bg-surface/90 px-4 py-2 text-xs font-medium text-foreground shadow-lg backdrop-blur-sm">
           <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-t-transparent" />
           Drawing {mode.label.toLowerCase()} route…
         </div>

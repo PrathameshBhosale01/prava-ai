@@ -12,7 +12,7 @@ function formatDay(dateStr) {
 }
 
 function Message({ children }) {
-  return <p className="mt-4 text-sm text-gray-500">{children}</p>;
+  return <p className="mt-4 text-sm text-muted-foreground">{children}</p>;
 }
 
 export default function WeatherForecast({ destination, startDate, duration }) {
@@ -56,7 +56,7 @@ export default function WeatherForecast({ destination, startDate, duration }) {
   const { status, data, message } = state;
 
   return (
-    <div className="rounded-xl border bg-white p-6">
+    <div className="rounded-xl border bg-surface p-6">
       <h2 className="text-xl font-semibold">Weather</h2>
 
       {status === "loading" && <Message>Loading forecast...</Message>}
@@ -80,7 +80,7 @@ export default function WeatherForecast({ destination, startDate, duration }) {
 
       {status === "done" && data.available && (
         <>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             {data.location.name}
             {data.location.country ? `, ${data.location.country}` : ""}
             {data.partial && " · forecast covers part of your trip"}
@@ -90,18 +90,18 @@ export default function WeatherForecast({ destination, startDate, duration }) {
             {data.days.map((day) => (
               <div
                 key={day.date}
-                className="min-w-[120px] shrink-0 rounded-lg border bg-gray-50 p-3 text-center"
+                className="min-w-[120px] shrink-0 rounded-lg border bg-surface-muted p-3 text-center"
               >
-                <p className="text-xs font-medium text-gray-500">
+                <p className="text-xs font-medium text-muted-foreground">
                   {formatDay(day.date)}
                 </p>
                 <p className="my-2 text-3xl">{day.emoji}</p>
                 <p className="text-sm font-semibold">
                   {day.max}° / {day.min}°
                 </p>
-                <p className="mt-1 text-xs text-gray-500">{day.label}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{day.label}</p>
                 {day.rainChance != null && (
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Rain {day.rainChance}%
                   </p>
                 )}
@@ -109,7 +109,7 @@ export default function WeatherForecast({ destination, startDate, duration }) {
             ))}
           </div>
 
-          <p className="mt-3 text-xs text-gray-400">
+          <p className="mt-3 text-xs text-muted-foreground">
             Weather data by Open-Meteo.com
           </p>
         </>

@@ -6,7 +6,7 @@ export default function SignupPage() {
           Sign Up
         </h1>
 
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Create your Prava AI account.
         </p>
       </div>

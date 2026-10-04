@@ -11,7 +11,7 @@ import { getMode } from "@/lib/travelModes";
 const DiscoverMap = dynamic(() => import("@/components/discover/DiscoverMap"), {
   ssr: false,
   loading: () => (
-    <div className="h-[350px] animate-pulse rounded-xl border bg-gray-100 md:h-[520px]" />
+    <div className="h-[350px] animate-pulse rounded-xl border bg-surface-muted md:h-[520px]" />
   ),
 });
 
@@ -241,18 +241,18 @@ export default function DiscoverPage() {
   }, [points, mode, road]);
 
   const inputClass =
-    "w-full rounded-xl border-2 border-gray-200 bg-white px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-500";
+    "w-full rounded-xl border-2 border-border bg-surface px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-violet-500";
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Discover Destinations</h1>
-        <p className="mt-1 text-gray-600">
+        <p className="mt-1 text-muted-foreground">
           Enter your route and the map will show the way.
         </p>
       </div>
 
-      <form onSubmit={handleSearch} className="rounded-xl border bg-white p-6 shadow-sm">
+      <form onSubmit={handleSearch} className="rounded-xl border bg-surface p-6 shadow-sm">
         <h2 className="text-lg font-semibold">Trip Filters</h2>
 
         <div className="mt-4 grid gap-5 sm:grid-cols-2">
@@ -300,7 +300,7 @@ export default function DiscoverPage() {
             type="button"
             onClick={handleClear}
             disabled={searching}
-            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-60"
+            className="rounded-lg border px-4 py-2 text-sm font-medium hover:bg-surface-muted disabled:opacity-60"
           >
             Clear
           </button>
@@ -320,15 +320,15 @@ export default function DiscoverPage() {
 
         {view && (
           <div className="mt-3 text-sm">
-            <p className="font-medium text-gray-900">
+            <p className="font-medium text-foreground">
               {mode.icon} {view.markers[0].name} → {view.markers[1].name}
             </p>
-            <p className="text-gray-600">{view.summary}</p>
-            {view.note && <p className="mt-1 text-xs text-gray-500">{view.note}</p>}
+            <p className="text-muted-foreground">{view.summary}</p>
+            {view.note && <p className="mt-1 text-xs text-muted-foreground">{view.note}</p>}
           </div>
         )}
 
-        <p className="mt-3 text-xs text-gray-400">
+        <p className="mt-3 text-xs text-muted-foreground">
           Place search by Open-Meteo.com · Road routes by OSRM · Map data © OpenStreetMap
           contributors
         </p>

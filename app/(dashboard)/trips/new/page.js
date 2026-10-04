@@ -8,12 +8,12 @@ export default function NewTripPage() {
           Create a New Trip
         </h1>
 
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-muted-foreground">
           Tell Prava AI about your trip preferences.
         </p>
       </div>
 
-      <div className="rounded-xl border bg-white p-6 shadow-sm">
+      <div className="rounded-xl border bg-surface p-6 shadow-sm">
         <TripForm />
       </div>
     </div>

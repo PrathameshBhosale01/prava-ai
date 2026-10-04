@@ -404,7 +404,7 @@ const today = new Date()
             Interests & Preferences
           </h2>
 
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Select what you would like to experience.
           </p>
         </div>
@@ -417,7 +417,7 @@ const today = new Date()
             return (
               <label
                 key={interest}
-                className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 hover:bg-gray-50"
+                className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 hover:bg-surface-muted"
               >
                 <input
                   type="checkbox"
@@ -505,7 +505,7 @@ const today = new Date()
             <button
         type="submit"
         disabled={saving}
-        className="w-full rounded-lg bg-black px-6 py-3 font-medium text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+        className="w-full rounded-lg bg-primary px-6 py-3 font-medium text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
       >
         {saving ? "Creating Trip..." : "Create Trip"}
       </button>
