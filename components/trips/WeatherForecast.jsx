@@ -61,7 +61,7 @@ export default function WeatherForecast({ destination, startDate, duration }) {
 
       {status === "loading" && <Message>Loading forecast...</Message>}
 
-      {status === "error" && <Message>Couldn't load the forecast right now.</Message>}
+      {status === "error" && <Message>Couldn&apos;t load the forecast right now.</Message>}
 
       {status === "done" && !data.available && (
         <>
@@ -73,7 +73,7 @@ export default function WeatherForecast({ destination, startDate, duration }) {
           )}
           {data.reason === "past" && <Message>This trip is in the past.</Message>}
           {data.reason === "not_found" && (
-            <Message>Couldn't find "{destination}" for a forecast.</Message>
+            <Message>Couldn&apos;t find &quot;{destination}&quot; for a forecast.</Message>
           )}
         </>
       )}

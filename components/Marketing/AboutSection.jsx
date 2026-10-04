@@ -118,7 +118,7 @@ const AboutSection = () => {
             viewport={{ once: true }}
             className="text-base md:text-xl text-gray-700 dark:text-gray-300 leading-relaxed max-w-2xl"
           >
-            I'm Prathamesh Bhosale, a full-stack developer passionate about
+            I&apos;m Prathamesh Bhosale, a full-stack developer passionate about
             building practical web applications and AI-powered experiences.
             Prava AI is a personal project created to make travel planning
             smarter, more personalized, and easier to manage.

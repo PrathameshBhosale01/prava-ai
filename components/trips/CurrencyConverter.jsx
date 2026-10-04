@@ -98,7 +98,7 @@ export default function CurrencyConverter({
 
       {status === "error" && (
         <p className="mt-4 text-sm text-gray-500">
-          Couldn't load the exchange rate right now.
+          Couldn&apos;t load the exchange rate right now.
         </p>
       )}
 
