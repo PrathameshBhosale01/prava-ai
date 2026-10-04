@@ -1,26 +1,124 @@
 @import "tailwindcss";
 
+/* Class-based dark mode (toggled by next-themes) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------
+   Design tokens
+   One calm neutral scale + a single indigo accent. Components use the
+   semantic names (bg-surface, text-muted-foreground, ...) so light and
+   dark themes stay consistent everywhere.
+------------------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f7fb;
+  --surface: #ffffff;
+  --surface-muted: #f1f4f9;
+  --border: #e3e8f0;
+  --foreground: #0f172a;
+  --muted-foreground: #64748b;
+
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-foreground: #ffffff;
+  --primary-soft: #eef0ff;
+
+  --success: #059669;
+  --success-soft: #e6f6ef;
+  --info: #2563eb;
+  --info-soft: #e8f0fe;
+  --warning: #d97706;
+  --warning-soft: #fdf3e3;
+  --danger: #dc2626;
+  --danger-soft: #fdecec;
+
+  --card-shadow: 0 1px 2px rgb(15 23 42 / 0.04), 0 1px 3px rgb(15 23 42 / 0.06);
+  --pop-shadow: 0 10px 30px -10px rgb(15 23 42 / 0.18);
+}
+
+.dark {
+  --background: #0a0f1d;
+  --surface: #111827;
+  --surface-muted: #172033;
+  --border: #1f2a40;
+  --foreground: #e8ecf5;
+  --muted-foreground: #8b98b1;
+
+  --primary: #6366f1;
+  --primary-hover: #7c7ff5;
+  --primary-foreground: #ffffff;
+  --primary-soft: #1b2146;
+
+  --success: #34d399;
+  --success-soft: #0f2a24;
+  --info: #60a5fa;
+  --info-soft: #11213f;
+  --warning: #fbbf24;
+  --warning-soft: #2b2110;
+  --danger: #f87171;
+  --danger-soft: #2e1618;
+
+  --card-shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --pop-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-border: var(--border);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --shadow-card: var(--card-shadow);
+  --shadow-pop: var(--pop-shadow);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ------------------------------------------------------------------
+   Base
+------------------------------------------------------------------- */
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keyboard focus ring for everything interactive */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
