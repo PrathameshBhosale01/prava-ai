@@ -3,6 +3,7 @@
 import { Menu, PanelLeft } from "lucide-react";
 
 import Button from "@/components/ui/Button";
+import HeaderWeather from "@/components/layout/HeaderWeather";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 
 export default function Header({ onToggleMobile, onToggleDesktop }) {
@@ -32,8 +33,8 @@ export default function Header({ onToggleMobile, onToggleDesktop }) {
 
       <div className="flex-1" />
 
-      {/* Header widgets (weather chip lands here in Step 4) */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
+        <HeaderWeather />
         <ThemeToggle />
       </div>
     </header>

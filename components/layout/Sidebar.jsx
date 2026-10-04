@@ -45,7 +45,7 @@ export default function Sidebar({ mobileOpen, desktopOpen, onClose }) {
       >
         {/* Brand */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-5">
-          <Link href="/dashboard" className="flex items-center gap-2.5">
+          <Link href="/" className="flex items-center gap-2.5">
             <Image src="/logo2.png" alt="" width={28} height={28} />
             <span className="text-lg font-semibold tracking-tight text-foreground">
               Prava AI

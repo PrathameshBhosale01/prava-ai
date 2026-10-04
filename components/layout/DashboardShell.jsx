@@ -7,6 +7,8 @@ import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import Skeleton from "@/components/ui/Skeleton";
 import { useAuth } from "@/context/AuthContext";
+import { WeatherProvider } from "@/context/WeatherContext";
+
 import { cn } from "@/lib/utils";
 
 function ShellSkeleton() {
@@ -50,29 +52,31 @@ export default function DashboardShell({ children }) {
 
   if (loading || !user) return <ShellSkeleton />;
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Sidebar
-        mobileOpen={mobileOpen}
-        desktopOpen={desktopOpen}
-        onClose={() => setMobileOpen(false)}
-      />
-
-      <div
-        className={cn(
-          "flex min-h-screen flex-col transition-[padding] duration-200 ease-out",
-          desktopOpen && "md:pl-64"
-        )}
-      >
-        <Header
-          onToggleMobile={() => setMobileOpen((v) => !v)}
-          onToggleDesktop={() => setDesktopOpen((v) => !v)}
+    return (
+    <WeatherProvider>
+      <div className="min-h-screen bg-background text-foreground">
+        <Sidebar
+          mobileOpen={mobileOpen}
+          desktopOpen={desktopOpen}
+          onClose={() => setMobileOpen(false)}
         />
 
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-          {children}
-        </main>
+        <div
+          className={cn(
+            "flex min-h-screen flex-col transition-[padding] duration-200 ease-out",
+            desktopOpen && "md:pl-64"
+          )}
+        >
+          <Header
+            onToggleMobile={() => setMobileOpen((v) => !v)}
+            onToggleDesktop={() => setDesktopOpen((v) => !v)}
+          />
+
+          <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </WeatherProvider>
   );
 }
