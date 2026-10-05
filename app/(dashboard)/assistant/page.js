@@ -1,3 +1,10 @@
-export default function AssistantPage() {
-  return <h1 className="text-3xl font-bold">AI Assistant</h1>;
+import AssistantWorkspace from "@/components/assistant/AssistantWorkspace";
+
+export const metadata = {
+  title: "AI Assistant | Prava AI",
+};
+
+ export default function AssistantPage() {
+
+  return <AssistantWorkspace />;
 }
