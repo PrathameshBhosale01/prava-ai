@@ -35,7 +35,7 @@ export function useInsightsData(uid) {
     );
 
     const stopGoal = onSnapshot(
-      doc(db, "user", uid),
+      doc(db, "users", uid),
       (snap) => {
         setGoal(snap.data()?.budgetGoal?.amount ?? null);
         setGoalLoading(false);
@@ -57,7 +57,7 @@ export function useInsightsData(uid) {
 
 export function saveBudgetGoal(uid, amount) {
   return setDoc(
-    doc(db, "user", uid),
+    doc(db, "users", uid),
     { budgetGoal: { amount, currency: "INR", updatedAt: serverTimestamp() } },
     { merge: true }
   );
