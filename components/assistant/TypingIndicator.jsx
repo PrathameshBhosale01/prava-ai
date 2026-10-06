@@ -5,7 +5,7 @@ export default function TypingIndicator() {
       {[0, 1, 2].map((index) => (
         <span
           key={index}
-          className="h-2 w-2 animate-pulse rounded-full bg-gray-400"
+          className="h-2 w-2 animate-pulse rounded-full bg-muted-foreground/60"
           style={{ animationDelay: `${index * 180}ms`, animationDuration: "1.1s" }}
         />
       ))}

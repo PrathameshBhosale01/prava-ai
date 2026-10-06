@@ -13,7 +13,7 @@ export default function AssistantMark({ size = "md" }) {
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center bg-linear-to-br from-blue-600 to-violet-600 text-white shadow-sm ${box}`}
+      className={`flex shrink-0 items-center justify-center bg-linear-to-br from-primary to-violet-500 text-primary-foreground shadow-card ${box}`}
     >
       <Sparkles size={icon} strokeWidth={2} />
     </span>

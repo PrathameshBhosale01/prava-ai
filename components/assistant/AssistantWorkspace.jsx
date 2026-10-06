@@ -23,7 +23,7 @@ export default function AssistantWorkspace() {
 
   if (loading || !user) {
     return (
-      <div className="flex h-[calc(100dvh-7rem)] min-h-[520px] items-center justify-center rounded-2xl border border-gray-200 bg-white text-sm text-gray-400" role="status">
+      <div className="flex h-[calc(100dvh-7rem)] min-h-[520px] items-center justify-center rounded-2xl border border-border bg-surface text-sm text-muted-foreground" role="status">
         Loading assistant…
       </div>
     );

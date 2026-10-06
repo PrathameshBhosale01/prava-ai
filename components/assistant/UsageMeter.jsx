@@ -7,10 +7,10 @@ export default function UsageMeter({ usage }) {
   const { plans, messages } = usage;
   const tone =
     plans.remaining === 0 || messages.remaining === 0
-      ? "border-red-200 bg-red-50 text-red-700"
+      ? "border-danger/30 bg-danger-soft text-danger"
       : plans.remaining === 1
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : "border-gray-200 bg-white text-gray-600";
+         ? "border-warning/30 bg-warning-soft text-warning"
+        : "border-border bg-surface text-muted-foreground";
 
   return (
     <span

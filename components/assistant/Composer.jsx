@@ -60,7 +60,7 @@ export default function Composer({ onSend, onStop, busy }) {
   return (
     <div className="px-4 pb-4 pt-2 sm:px-6">
       <div className="mx-auto max-w-3xl">
-        <div className="flex items-end gap-2 rounded-2xl border border-gray-300 bg-white p-2 shadow-sm transition focus-within:border-gray-400 focus-within:ring-4 focus-within:ring-gray-100">
+         <div className="flex items-end gap-2 rounded-2xl border border-border bg-surface p-2 shadow-card transition focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/15">
           {speech.supported && (
             <button
               type="button"
@@ -69,8 +69,8 @@ export default function Composer({ onSend, onStop, busy }) {
               aria-pressed={speech.listening}
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition ${
                 speech.listening
-                  ? "animate-pulse bg-red-50 text-red-600"
-                  : "text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                 ? "animate-pulse bg-danger-soft text-danger"
+                  : "text-muted-foreground hover:bg-surface-muted hover:text-foreground"
               }`}
             >
               <Mic size={20} />
@@ -87,7 +87,7 @@ export default function Composer({ onSend, onStop, busy }) {
             autoFocus
             aria-label="Message Prava"
             placeholder={speech.listening ? "Listening…" : "Ask about destinations, budgets, or plan a trip…"}
-            className="max-h-[200px] min-h-10 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] leading-5 text-gray-900 outline-none placeholder:text-gray-400"
+             className="max-h-[200px] min-h-10 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] leading-5 text-foreground outline-none! placeholder:text-muted-foreground"
           />
 
           {busy ? (
@@ -95,7 +95,8 @@ export default function Composer({ onSend, onStop, busy }) {
               type="button"
               onClick={onStop}
               aria-label="Stop generating"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white transition hover:bg-gray-700"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:bg-primary-hover"
+
             >
               <Square size={14} fill="currentColor" />
             </button>
@@ -105,19 +106,18 @@ export default function Composer({ onSend, onStop, busy }) {
               onClick={submit}
               disabled={!canSend}
               aria-label="Send message"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white transition hover:bg-gray-700 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted-foreground"
             >
               <ArrowUp size={20} />
             </button>
           )}
         </div>
 
-        <div className="mt-2 flex items-center justify-between gap-3 px-1 text-xs text-gray-400">
-          <p className={speech.error ? "text-red-600" : undefined}>
-            {speech.error ?? "Prava can make mistakes. Check prices and availability before booking."}
+         <div className="mt-2 flex items-center justify-between gap-3 px-1 text-xs text-muted-foreground">
+          <p className={speech.error ? "text-danger" : undefined}>
           </p>
           {nearLimit && (
-            <span className={value.length >= MAX_USER_MESSAGE_CHARS ? "text-red-600" : undefined}>
+            <span className={value.length >= MAX_USER_MESSAGE_CHARS ? "text-danger" : undefined}>
               {value.length}/{MAX_USER_MESSAGE_CHARS}
             </span>
           )}

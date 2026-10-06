@@ -48,7 +48,7 @@ export default function MessageList({ messages, renderExtras, onRetry }) {
         onScroll={handleScroll}
         role="log"
         aria-label="Conversation"
-        className="h-full overflow-y-auto [scrollbar-color:#d1d5db_transparent] [scrollbar-width:thin]"
+        className="h-full overflow-y-auto [scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]"
       >
         <div className="mx-auto w-full max-w-3xl space-y-7 px-4 py-6 sm:px-6">
           {messages.map((message, index) => (
@@ -74,7 +74,7 @@ export default function MessageList({ messages, renderExtras, onRetry }) {
           type="button"
           onClick={() => scrollToBottom("smooth")}
           aria-label="Jump to latest message"
-          className="absolute bottom-4 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-600 shadow-md transition hover:bg-gray-50 hover:text-gray-900"
+         className="absolute bottom-4 left-1/2 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border border-border bg-surface text-muted-foreground shadow-md transition hover:bg-surface-muted hover:text-foreground"
         >
           <ArrowDown size={16} />
         </button>
