@@ -1,13 +1,16 @@
 "use client";
 
-import { LogOut, Mail } from "lucide-react";
+import { ExternalLink, LogOut, Mail } from "lucide-react";
 
 import UserAvatar from "@/components/layout/UserAvatar";
 import AccountDetails from "@/components/profile/AccountDetails";
+import AiUsageCard from "@/components/profile/AiUsageCard";
+import ProfileStats from "@/components/profile/ProfileStats";
 import TravelPreferences from "@/components/profile/TravelPreferences";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/context/AuthContext";
+import { getFeedbackHref } from "@/lib/appConfig";
 
 export default function ProfileModal({ open, onClose }) {
   const { user, profile, logout } = useAuth();
@@ -55,8 +58,20 @@ export default function ProfileModal({ open, onClose }) {
           </div>
         </div>
 
+        <ProfileStats />
+        <AiUsageCard />
         <TravelPreferences />
         <AccountDetails />
+
+        <div className="flex justify-end">
+          <a
+            href={getFeedbackHref()}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+          >
+            Share feedback
+            <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+          </a>
+        </div>
       </div>
     </Modal>
   );
