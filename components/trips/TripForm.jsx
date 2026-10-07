@@ -4,22 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { createTrip } from "@/lib/tripService";
+import { TRAVEL_INTERESTS as interestOptions } from "@/lib/travelInterests";
 
-const interestOptions = [
-  "History & Culture",
-  "Nature & Outdoors",
-  "Food & Dining",
-  "Nightlife",
-  "Shopping",
-  "Art & Museums",
-  "Adventure Sports",
-  "Photography",
-  "Beaches",
-  "Mountains",
-  "Architecture",
-  "Music & Festivals",
-  "Wellness & Spa",
-];
 
 const categoryOptions = [
   "Leisure",

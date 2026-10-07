@@ -73,7 +73,7 @@ export default function AssistantView({ chat }) {
             <AssistantMark size="md" />
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-sm font-semibold text-foreground">Prava Assistant</h1>
-+              <p className="truncate text-xs text-muted-foreground">Plan trips and get travel answers</p>
+              <p className="truncate text-xs text-muted-foreground">Plan trips and get travel answers</p>
             </div>
 
             <div className="hidden sm:block">

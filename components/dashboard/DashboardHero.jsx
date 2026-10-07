@@ -14,14 +14,14 @@ function getGreeting() {
   return "Good evening";
 }
 
-function getFirstName(user) {
-  const fromProfile = user?.displayName?.trim().split(/\s+/)[0];
-  return fromProfile || user?.email?.split("@")[0] || "Traveler";
+function getFirstName(profile, user) {
+  const fullName = profile?.name || user?.displayName;
+  const first = fullName?.trim().split(/\s+/)[0];
+  return first || user?.email?.split("@")[0] || "Traveler";
 }
 
 export default function DashboardHero() {
-  const { user } = useAuth();
-
+    const { user, profile } = useAuth();
   // Computed once on mount so it never changes mid-session or during render.
   const [greeting] = useState(getGreeting);
 
@@ -45,7 +45,7 @@ export default function DashboardHero() {
           </span>
 
           <h1 className="mt-4 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-            {greeting}, {getFirstName(user)}
+                        {greeting}, {getFirstName(profile, user)}
           </h1>
           <p className="mt-2 text-sm text-indigo-100 sm:text-base">
             Ready to plan your next adventure? Let&apos;s make it unforgettable.
