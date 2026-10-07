@@ -3,6 +3,8 @@
 import { LogOut, Mail } from "lucide-react";
 
 import UserAvatar from "@/components/layout/UserAvatar";
+import AccountDetails from "@/components/profile/AccountDetails";
+import TravelPreferences from "@/components/profile/TravelPreferences";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { useAuth } from "@/context/AuthContext";
@@ -22,6 +24,7 @@ export default function ProfileModal({ open, onClose }) {
     <Modal
       open={open}
       onClose={onClose}
+      size="lg"
       title="Your profile"
       footer={
         <>
@@ -35,20 +38,25 @@ export default function ProfileModal({ open, onClose }) {
         </>
       }
     >
-      <div className="flex items-center gap-4">
-        <UserAvatar
-          photoURL={user?.photoURL}
-          name={displayName}
-          className="h-16 w-16 text-xl"
-        />
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <UserAvatar
+            photoURL={user?.photoURL}
+            name={displayName}
+            className="h-16 w-16 text-xl"
+          />
 
-        <div className="min-w-0">
-          <p className="truncate text-lg font-semibold text-foreground">{displayName}</p>
-          <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span className="truncate">{user?.email}</span>
-          </p>
+          <div className="min-w-0">
+            <p className="truncate text-lg font-semibold text-foreground">{displayName}</p>
+            <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Mail className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{user?.email}</span>
+            </p>
+          </div>
         </div>
+
+        <TravelPreferences />
+        <AccountDetails />
       </div>
     </Modal>
   );

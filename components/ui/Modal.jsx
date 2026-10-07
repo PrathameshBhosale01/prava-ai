@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import Button from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
+const SIZES = { sm: "max-w-sm", md: "max-w-md", lg: "max-w-lg" };
 /**
  * Accessible modal built on the native <dialog> element, so the browser
  * handles focus trapping, Esc to close, and making the page behind inert.
@@ -19,6 +20,7 @@ export default function Modal({
   title,
   description,
   footer,
+  size = "md",
   className,
   children,
 }) {
@@ -47,9 +49,10 @@ export default function Modal({
         if (event.target === event.currentTarget) onClose();
       }}
       className={cn(
-        "m-auto w-[calc(100%-2rem)] max-w-md overflow-hidden rounded-2xl border border-border bg-surface p-0 text-foreground shadow-pop",
+        "m-auto w-[calc(100%-2rem)] overflow-hidden rounded-2xl border border-border bg-surface p-0 text-foreground shadow-pop",
         "max-h-[calc(100dvh-2rem)] open:flex open:flex-col",
         "backdrop:bg-black/50 backdrop:backdrop-blur-[2px]",
+        SIZES[size],
         className
       )}
     >
