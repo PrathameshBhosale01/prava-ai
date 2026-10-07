@@ -119,6 +119,32 @@ body {
   }
 }
 
+/* Modals: stop the page behind from scrolling, and ease them in. */
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+
+dialog[open] {
+  animation: modal-in 160ms ease-out;
+}
+
+dialog[open]::backdrop {
+  animation: modal-fade 160ms ease-out;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Keyboard focus ring for everything interactive */
 :focus-visible {
   outline: 2px solid var(--primary);

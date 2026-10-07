@@ -3,24 +3,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogOut, X } from "lucide-react";
+import { ChevronsUpDown, X } from "lucide-react";
 
+import UserAvatar from "@/components/layout/UserAvatar";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
 import { sidebarMenus } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
-function getInitials(name = "") {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
-}
-
-export default function Sidebar({ mobileOpen, desktopOpen, onClose }) {
+export default function Sidebar({ mobileOpen, desktopOpen, onClose, onOpenProfile }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user, profile } = useAuth();
 
-  const displayName = user?.displayName || user?.email?.split("@")[0] || "Traveler";
+  const displayName =
+    profile?.name || user?.displayName || user?.email?.split("@")[0] || "Traveler";
 
   return (
     <>
@@ -93,38 +89,34 @@ export default function Sidebar({ mobileOpen, desktopOpen, onClose }) {
           })}
         </nav>
 
-        {/* Account */}
+        {/* Account: opens the profile modal */}
         <div className="shrink-0 border-t border-border p-3">
-          <div className="flex items-center gap-3 rounded-lg px-2 py-2">
-            {user?.photoURL ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={user.photoURL}
-                alt=""
-                referrerPolicy="no-referrer"
-                className="h-9 w-9 shrink-0 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-semibold text-primary">
-                {getInitials(displayName)}
-              </div>
-            )}
+          <button
+            type="button"
+            onClick={() => {
+              onClose(); // close the mobile drawer first
+              onOpenProfile();
+            }}
+            aria-haspopup="dialog"
+            className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-surface-muted"
+          >
+            <UserAvatar
+              photoURL={user?.photoURL}
+              name={displayName}
+              className="h-9 w-9 text-xs"
+            />
 
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
-              <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
-            </div>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-sm font-medium text-foreground">
+                {displayName}
+              </span>
+              <span className="block truncate text-xs text-muted-foreground">
+                {user?.email}
+              </span>
+            </span>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label="Log out"
-              title="Log out"
-              onClick={logout}
-            >
-              <LogOut className="h-[18px] w-[18px]" />
-            </Button>
-          </div>
+            <ChevronsUpDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </button>
         </div>
       </aside>
     </>

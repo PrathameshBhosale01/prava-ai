@@ -8,6 +8,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import Skeleton from "@/components/ui/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { WeatherProvider } from "@/context/WeatherContext";
+import ProfileModal from "@/components/profile/ProfileModal";
 
 import { cn } from "@/lib/utils";
 
@@ -36,6 +37,7 @@ export default function DashboardShell({ children }) {
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   // Auth guard: signed-out visitors go to /login.
   useEffect(() => {
@@ -59,6 +61,7 @@ export default function DashboardShell({ children }) {
           mobileOpen={mobileOpen}
           desktopOpen={desktopOpen}
           onClose={() => setMobileOpen(false)}
+          onOpenProfile={() => setProfileOpen(true)}
         />
 
         <div
@@ -76,7 +79,8 @@ export default function DashboardShell({ children }) {
             {children}
           </main>
         </div>
-      </div>
+           <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+      </div>    
     </WeatherProvider>
   );
 }
