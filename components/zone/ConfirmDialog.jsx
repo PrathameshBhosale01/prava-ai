@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 import Button from "@/components/ui/Button";
 
@@ -9,8 +9,11 @@ import Button from "@/components/ui/Button";
  * page behind is inert — all provided by the browser. Focus starts on "Cancel" so a
  * stray Enter can't trigger the destructive action.
  */
-export default function ConfirmDialog({ open, title, description, confirmLabel = "Delete", busy = false, onConfirm, onCancel }) {
+export default function ConfirmDialog({ open, title, description, confirmLabel = "Delete", busyLabel = "Deleting…", busy = false, onConfirm, onCancel }) {
   const ref = useRef(null);
+  const uid = useId(); // several dialogs can live on one page, so ids must be unique
+  const titleId = `${uid}-title`;
+  const descId = `${uid}-desc`;
 
   useEffect(() => {
     const dialog = ref.current;
@@ -22,8 +25,8 @@ export default function ConfirmDialog({ open, title, description, confirmLabel =
   return (
     <dialog
       ref={ref}
-      aria-labelledby="confirm-title"
-      aria-describedby="confirm-desc"
+      aria-labelledby={titleId}
+      aria-describedby={descId}
       onCancel={(e) => {
         e.preventDefault(); // we close it ourselves via `open`
         if (!busy) onCancel();
@@ -32,10 +35,10 @@ export default function ConfirmDialog({ open, title, description, confirmLabel =
       className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-xl border border-border bg-surface p-0 text-foreground shadow-pop backdrop:bg-black/50 backdrop:backdrop-blur-sm"
     >
       <div className="p-6">
-        <h2 id="confirm-title" className="text-lg font-semibold tracking-tight">
+        <h2 id={titleId} className="text-lg font-semibold tracking-tight">
           {title}
         </h2>
-        <p id="confirm-desc" className="mt-2 text-sm text-muted-foreground">
+        <p id={descId} className="mt-2 text-sm text-muted-foreground">
           {description}
         </p>
         <div className="mt-6 flex justify-end gap-2">
@@ -43,7 +46,7 @@ export default function ConfirmDialog({ open, title, description, confirmLabel =
             Cancel
           </Button>
           <Button variant="danger" onClick={onConfirm} disabled={busy}>
-            {busy ? "Deleting…" : confirmLabel}
+            {busy ? busyLabel : confirmLabel}
           </Button>
         </div>
       </div>
