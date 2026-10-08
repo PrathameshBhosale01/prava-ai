@@ -105,7 +105,9 @@ export default function PostView({ id }) {
           <div className="flex items-center gap-3">
             <Avatar name={post.author.name} src={post.author.photoURL} className="h-10 w-10 text-sm" />
             <div className="text-sm leading-tight">
-              <p className="font-medium text-foreground">{post.author.name}</p>
+              <Link href={`/zone/author/${post.author.uid}`} className="font-medium text-foreground hover:text-primary hover:underline">
+                {post.author.name}
+              </Link>
               <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-muted-foreground">
                 <time dateTime={post.createdAt}>{formatFullDate(post.createdAt)}</time>
                 {wasEdited(post.createdAt, post.updatedAt) && <span>(edited)</span>}

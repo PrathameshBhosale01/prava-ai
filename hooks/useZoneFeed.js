@@ -11,25 +11,25 @@ import { zoneApi } from "@/lib/zone/client";
  * The reducer is keyed by the filters (see lib/zone/feedState.js), so stale
  * responses can't clobber newer ones.
  */
-export function useZoneFeed({ q, category }) {
+export function useZoneFeed({ q, category, sort = "new", authorUid = "" }) {
   const [state, dispatch] = useReducer(feedReducer, initialFeedState);
   const [attempt, setAttempt] = useState(0);
   const pendingLikes = useRef(new Set());
 
   // `attempt` is part of the key so "Try again" always refetches.
-  const key = `${attempt}|${category}|${q}`;
+  const key = `${attempt}|${category}|${sort}|${authorUid}|${q}`;
 
   useEffect(() => {
     const controller = new AbortController();
     zoneApi
-      .listPosts({ q, category, signal: controller.signal })
+      .listPosts({ q, category, sort, authorUid, signal: controller.signal })
       .then(({ posts, nextCursor }) => dispatch({ type: "loaded", key, posts, nextCursor }))
       .catch((error) => {
         if (error?.name === "AbortError") return;
         dispatch({ type: "failed", key, error: error.message });
       });
     return () => controller.abort();
-  }, [key, q, category]);
+  }, [key, q, category, sort, authorUid]);
 
   const isCurrent = state.key === key;
 
@@ -37,7 +37,7 @@ export function useZoneFeed({ q, category }) {
     if (!state.nextCursor || state.loadingMore || !isCurrent) return;
     dispatch({ type: "more-start" });
     try {
-      const { posts, nextCursor } = await zoneApi.listPosts({ q, category, cursor: state.nextCursor });
+      const { posts, nextCursor } = await zoneApi.listPosts({ q, category, sort, authorUid, cursor: state.nextCursor });
       dispatch({ type: "more-loaded", key, posts, nextCursor });
     } catch (error) {
       dispatch({ type: "more-failed" });

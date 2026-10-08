@@ -1,0 +1,11 @@
+{
+  "indexes": [
+    { "collectionGroup": "blog_posts", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "category", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" }] },
+    { "collectionGroup": "blog_posts", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "category", "order": "ASCENDING" }, { "fieldPath": "likeCount", "order": "DESCENDING" }] },
+    { "collectionGroup": "blog_posts", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "category", "order": "ASCENDING" }, { "fieldPath": "commentCount", "order": "DESCENDING" }] },
+    { "collectionGroup": "blog_posts", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "authorUid", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" }] },
+    { "collectionGroup": "blog_posts", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "authorUid", "order": "ASCENDING" }, { "fieldPath": "likeCount", "order": "DESCENDING" }] },
+    { "collectionGroup": "blog_posts", "queryScope": "COLLECTION", "fields": [{ "fieldPath": "authorUid", "order": "ASCENDING" }, { "fieldPath": "commentCount", "order": "DESCENDING" }] }
+  ],
+  "fieldOverrides": []
+}

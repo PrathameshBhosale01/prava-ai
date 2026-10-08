@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MotionConfig, motion } from "framer-motion";
-import { Loader2, PenLine } from "lucide-react";
+import { Loader2, PenLine, UserRound } from "lucide-react";
 
 import Button, { buttonVariants } from "@/components/ui/Button";
+import { useAuth } from "@/context/AuthContext";
 import { useZoneFeed } from "@/hooks/useZoneFeed";
-import { CATEGORIES } from "@/lib/zone/constants";
+import { CATEGORIES, SORT_OPTIONS } from "@/lib/zone/constants";
 import { cn } from "@/lib/utils";
 
 import CategoryFilter from "./CategoryFilter";
@@ -16,19 +17,30 @@ import { EmptyFeed, FeedError } from "./FeedStates";
 import PostCard from "./PostCard";
 import PostCardSkeleton from "./PostCardSkeleton";
 import SearchField from "./SearchField";
+import SortSelect from "./SortSelect";
+import { BackLink } from "./StatePanel";
 
 const DEBOUNCE_MS = 350;
 const PAGE_SIZE = 12; // only used to cap the entrance-animation stagger
 
-export default function ZoneFeed() {
+/**
+ * The story feed. With `authorUid` it becomes that writer's page ("My stories" when it's you):
+ * same cards, sorting and paging, but no search/category filters.
+ */
+export default function ZoneFeed({ authorUid = "" }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const isAuthorPage = Boolean(authorUid);
+  const isSelf = isAuthorPage && user?.uid === authorUid;
 
   // The URL is the source of truth for filters: shareable links, working back button.
-  const q = (searchParams.get("q") || "").trim().slice(0, 100);
+  const q = isAuthorPage ? "" : (searchParams.get("q") || "").trim().slice(0, 100);
   const rawCategory = searchParams.get("category") || "";
-  const category = CATEGORIES.includes(rawCategory) ? rawCategory : "";
+  const category = !isAuthorPage && CATEGORIES.includes(rawCategory) ? rawCategory : "";
+  const rawSort = searchParams.get("sort") || "";
+  const sort = SORT_OPTIONS.some((o) => o.value === rawSort) ? rawSort : "new";
 
   const [input, setInput] = useState(q);
   const [lastQ, setLastQ] = useState(q);
@@ -43,6 +55,7 @@ export default function ZoneFeed() {
     const params = new URLSearchParams();
     if (next.q) params.set("q", next.q);
     if (next.category) params.set("category", next.category);
+    if (next.sort && next.sort !== "new") params.set("sort", next.sort);
     const query = params.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
   }
@@ -51,56 +64,76 @@ export default function ZoneFeed() {
   useEffect(() => {
     const trimmed = input.trim();
     if (trimmed === q) return;
-    const timer = setTimeout(() => updateUrl({ q: trimmed, category }), DEBOUNCE_MS);
+    const timer = setTimeout(() => updateUrl({ q: trimmed, category, sort }), DEBOUNCE_MS);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- updateUrl only closes over router/pathname
-  }, [input, q, category]);
+  }, [input, q, category, sort]);
 
-  const { posts, loading, refreshing, error, hasMore, loadingMore, loadMore, toggleLike, retry } = useZoneFeed({ q, category });
+  const { posts, loading, refreshing, error, hasMore, loadingMore, loadMore, toggleLike, retry } = useZoneFeed({ q, category, sort, authorUid });
 
   const filtered = Boolean(q || category);
   const clearFilters = () => {
     setInput("");
-    updateUrl({ q: "", category: "" });
+    updateUrl({ q: "", category: "", sort });
   };
+
+  const authorName = posts[0]?.author.name;
+  const title = !isAuthorPage ? "Travel Blog" : isSelf ? "My stories" : authorName ? `Stories by ${authorName}` : "Stories";
 
   return (
     <MotionConfig reducedMotion="user">
       <div className="space-y-6">
+        {isAuthorPage && <BackLink />}
+
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Travel Blog</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">{title}</h1>
             <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">
-              Stories, tips and photos from travelers around the world.
+              {isAuthorPage ? "Everything they've shared so far." : "Stories, tips and photos from travelers around the world."}
             </p>
           </div>
-          <Link href="/zone/new" className={buttonVariants({ size: "lg", className: "self-start sm:self-auto" })}>
-            <PenLine className="h-4 w-4" aria-hidden="true" />
-            New post
-          </Link>
+          <div className="flex gap-2 self-start sm:self-auto">
+            {!isAuthorPage && user && (
+              <Link href={`/zone/author/${user.uid}`} className={buttonVariants({ variant: "outline", size: "lg" })}>
+                <UserRound className="h-4 w-4" aria-hidden="true" />
+                My stories
+              </Link>
+            )}
+            <Link href="/zone/new" className={buttonVariants({ size: "lg" })}>
+              <PenLine className="h-4 w-4" aria-hidden="true" />
+              New post
+            </Link>
+          </div>
         </header>
 
-        <div className="space-y-4">
-          <SearchField value={input} onChange={setInput} onClear={() => setInput("")} />
-          <CategoryFilter value={category} onChange={(next) => updateUrl({ q, category: next })} />
-        </div>
+        {!isAuthorPage && (
+          <div className="space-y-4">
+            <SearchField value={input} onChange={setInput} onClear={() => setInput("")} />
+            <CategoryFilter value={category} onChange={(next) => updateUrl({ q, category: next, sort })} />
+          </div>
+        )}
 
         {/* Screen readers: announce what happened after a filter change. */}
         <p role="status" aria-live="polite" className="sr-only">
           {loading || refreshing ? "Loading stories" : error ? "" : `${posts.length} ${posts.length === 1 ? "story" : "stories"} shown`}
         </p>
 
-        {filtered && !error && !loading && (
+        <div className="flex min-h-9 items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            {posts.length} {posts.length === 1 ? "result" : "results"}
-            {q && <> for &ldquo;{q}&rdquo;</>}
-            {category && <> in {category}</>}
-            {" · "}
-            <button type="button" onClick={clearFilters} className="cursor-pointer font-medium text-primary hover:underline">
-              Clear
-            </button>
+            {filtered && !error && !loading && (
+              <>
+                {posts.length} {posts.length === 1 ? "result" : "results"}
+                {q && <> for &ldquo;{q}&rdquo;</>}
+                {category && <> in {category}</>}
+                {" · "}
+                <button type="button" onClick={clearFilters} className="cursor-pointer font-medium text-primary hover:underline">
+                  Clear
+                </button>
+              </>
+            )}
           </p>
-        )}
+          <SortSelect value={sort} onChange={(next) => updateUrl({ q, category, sort: next })} />
+        </div>
 
         {error ? (
           <FeedError message={error} onRetry={retry} />
@@ -111,7 +144,7 @@ export default function ZoneFeed() {
             ))}
           </div>
         ) : posts.length === 0 ? (
-          <EmptyFeed filtered={filtered} onClear={clearFilters} />
+          <EmptyFeed filtered={filtered} onClear={clearFilters} author={isAuthorPage ? { isSelf } : undefined} />
         ) : (
           <>
             <ul aria-busy={refreshing} className={cn("grid gap-5 transition-opacity duration-200 sm:grid-cols-2 xl:grid-cols-3", refreshing && "opacity-50")}>

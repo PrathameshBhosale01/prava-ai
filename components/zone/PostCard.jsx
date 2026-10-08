@@ -55,7 +55,9 @@ export default function PostCard({ post, onToggleLike, priority = false }) {
           <div className="flex min-w-0 items-center gap-2">
             <Avatar name={post.author.name} src={post.author.photoURL} />
             <div className="min-w-0 text-xs leading-tight">
-              <p className="truncate font-medium text-foreground">{post.author.name}</p>
+              <Link href={`/zone/author/${post.author.uid}`} className="relative z-10 block truncate font-medium text-foreground hover:text-primary hover:underline">
+                {post.author.name}
+              </Link>
               <p className="mt-0.5 flex items-center gap-1.5 text-muted-foreground">
                 <time dateTime={post.createdAt}>{formatPostDate(post.createdAt)}</time>
                 <span aria-hidden="true">·</span>

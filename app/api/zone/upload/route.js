@@ -1,15 +1,17 @@
 import { ALLOWED_UPLOAD_TYPES, MAX_UPLOAD_BYTES } from "@/lib/zone/constants";
 import { isUploadConfigured, uploadImage } from "@/lib/zone/cloudinary";
 import { badRequest, ZoneError } from "@/lib/zone/errors";
-import { requireUser, route } from "@/lib/zone/http";
+import { enforceLimit, requireUser, route } from "@/lib/zone/http";
 
 /** POST multipart/form-data { file } → { url, width, height }. Signed-in users only. */
 export const POST = route(async (request) => {
-  await requireUser(request);
+  const { uid } = await requireUser(request);
 
   if (!isUploadConfigured()) {
     throw new ZoneError(503, "Photo uploads aren't set up yet.", { code: "uploads_unavailable" });
   }
+
+  await enforceLimit(uid, "upload"); // after the config check so a misconfigured server doesn't eat quota
 
   let form;
   try {

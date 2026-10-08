@@ -231,3 +231,54 @@ test("a bad pagination cursor is a 400, not a crash", async () => {
   await assert.rejects(listPosts({ db, cursor: "does-not-exist" }), { status: 400 });
   await assert.rejects(listPosts({ db, cursor: "a/b" }), { status: 400 });
 });
+
+test("sort by likes / comments, paginated, newest wins ties in search", async () => {
+  const db = fakeFirestore();
+  const a = await make(db, ana, { title: "Alpha trip story" });
+  const b = await make(db, ana, { title: "Bravo trip story" });
+  const c = await make(db, ana, { title: "Charlie trip story" });
+  for (const u of ["u1", "u2", "u3"]) await setLike({ db, uid: u, postId: a.id, liked: true });
+  await setLike({ db, uid: "u1", postId: c.id, liked: true });
+  for (let i = 0; i < 2; i++) await addComment({ db, postId: b.id, author: raj, input: { text: `c${i}` }, now: at() });
+
+  const ids = async (opts) => (await listPosts({ db, ...opts })).posts.map((p) => p.id);
+  assert.deepEqual(await ids({ sort: "likes" }), [a.id, c.id, b.id]);
+  assert.equal((await ids({ sort: "comments" }))[0], b.id, "most-commented first (ties are ordered by id, so only #1 is guaranteed)");
+
+  // pagination under a non-default sort has no gaps or repeats
+  const seen = [];
+  let cursor = "";
+  do {
+    const page = await listPosts({ db, sort: "likes", limit: 1, cursor });
+    seen.push(...page.posts.map((p) => p.id));
+    cursor = page.nextCursor || "";
+  } while (cursor);
+  assert.deepEqual(seen, [a.id, c.id, b.id]);
+
+  // search re-sorts its matches in memory
+  assert.deepEqual(await ids({ q: "trip", sort: "likes" }), [a.id, c.id, b.id]);
+  assert.deepEqual(await ids({ q: "trip", sort: "new" }), [c.id, b.id, a.id]);
+  await assert.rejects(listPosts({ db, sort: "random" }), { status: 400 });
+});
+
+test("author filter returns only that writer's stories (and combines with search/sort)", async () => {
+  const db = fakeFirestore();
+  await make(db, ana, { title: "Ana in Goa" });
+  await make(db, raj, { title: "Raj in Goa" });
+  const ana2 = await make(db, ana, { title: "Ana in Spiti" });
+
+  const titles = async (opts) => (await listPosts({ db, ...opts })).posts.map((p) => p.title);
+  assert.deepEqual(await titles({ authorUid: "ana" }), ["Ana in Spiti", "Ana in Goa"]);
+  assert.deepEqual(await titles({ authorUid: "raj" }), ["Raj in Goa"]);
+  assert.deepEqual(await titles({ authorUid: "ana", q: "goa" }), ["Ana in Goa"]);
+  assert.deepEqual(await titles({ authorUid: "nobody" }), []);
+  await assert.rejects(listPosts({ db, authorUid: "a/b" }), { status: 404 }, "uid can't address other paths");
+  assert.ok(ana2.id);
+});
+
+test("long (128-char) Firebase uids work for likes", async () => {
+  const db = fakeFirestore();
+  const { id } = await make(db);
+  const uid = "x".repeat(128);
+  assert.deepEqual(await setLike({ db, uid, postId: id, liked: true }), { liked: true, likeCount: 1 });
+});

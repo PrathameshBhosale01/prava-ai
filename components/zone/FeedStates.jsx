@@ -15,7 +15,20 @@ function Panel({ icon: Icon, tone, title, children }) {
   );
 }
 
-export function EmptyFeed({ filtered, onClear }) {
+export function EmptyFeed({ filtered, onClear, author }) {
+  if (author) {
+    return (
+      <Panel icon={BookOpenText} tone="bg-primary-soft text-primary" title={author.isSelf ? "You haven't written anything yet" : "No stories from this writer yet"}>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {author.isSelf ? "Your first story is a few minutes away." : "Check back later, or browse everyone's stories."}
+        </p>
+        <Link href={author.isSelf ? "/zone/new" : "/zone"} className={buttonVariants({ className: "mt-5" })}>
+          {author.isSelf ? <PenLine className="h-4 w-4" aria-hidden="true" /> : null}
+          {author.isSelf ? "Write a story" : "Browse stories"}
+        </Link>
+      </Panel>
+    );
+  }
   if (filtered) {
     return (
       <Panel icon={SearchX} tone="bg-surface-muted text-muted-foreground" title="No stories match that">

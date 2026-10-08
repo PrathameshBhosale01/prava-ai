@@ -1,5 +1,5 @@
 import { adminDb } from "@/lib/firebaseAdmin";
-import { readJson, requireUser, route } from "@/lib/zone/http";
+import { enforceLimit, readJson, requireUser, route } from "@/lib/zone/http";
 import { addComment, listComments } from "@/lib/zone/service";
 
 export const GET = route(async (request, { params }) => {
@@ -10,7 +10,8 @@ export const GET = route(async (request, { params }) => {
 
 /** POST { text } → { comment } */
 export const POST = route(async (request, { params }) => {
-  const { author } = await requireUser(request);
+  const { uid, author } = await requireUser(request);
+  await enforceLimit(uid, "comment");
   const { id } = await params;
   const input = await readJson(request);
   const comment = await addComment({ db: adminDb, postId: id, author, input });
