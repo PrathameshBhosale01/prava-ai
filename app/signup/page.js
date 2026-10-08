@@ -1,15 +1,14 @@
+import { Suspense } from "react";
+
+import SignupForm from "@/components/auth/SignupForm";
+
+export const metadata = { title: "Create account" };
+
+// SignupForm reads ?next= via useSearchParams, which needs a Suspense boundary.
 export default function SignupPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center">
-      <div>
-        <h1 className="text-3xl font-bold">
-          Sign Up
-        </h1>
-
-        <p className="mt-2 text-muted-foreground">
-          Create your Prava AI account.
-        </p>
-      </div>
-    </main>
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
   );
 }
