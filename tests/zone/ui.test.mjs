@@ -103,3 +103,29 @@ test("like actions for a post that's no longer on screen are ignored", () => {
   const s = withPosts(post("a"));
   assert.deepEqual(feedReducer(s, { type: "like-settled", id: "gone", liked: true, likeCount: 3 }).posts, s.posts);
 });
+
+import { formatFullDate, wasEdited } from "../../lib/zone/format.js";
+import { commentsReducer, initialCommentsState } from "../../lib/zone/commentsState.js";
+
+test("full dates and 'edited' detection", () => {
+  assert.equal(formatFullDate("2026-10-07T12:00:00Z"), "October 7, 2026");
+  assert.equal(formatFullDate("nope"), "");
+  assert.equal(wasEdited("2026-10-07T12:00:00Z", "2026-10-07T12:00:05Z"), false, "write right after creation isn't an edit");
+  assert.equal(wasEdited("2026-10-07T12:00:00Z", "2026-10-08T12:00:00Z"), true);
+  assert.equal(wasEdited(null, undefined), false);
+});
+
+test("comments: load → add → update → remove, ignoring duplicates", () => {
+  const c = (id, text = id) => ({ id, text });
+  let s = commentsReducer(initialCommentsState, { type: "loaded", key: "p1", items: [c("a")] });
+  assert.equal(s.status, "ready");
+  s = commentsReducer(s, { type: "added", comment: c("b") });
+  s = commentsReducer(s, { type: "added", comment: c("b") });
+  assert.deepEqual(s.items.map((x) => x.id), ["a", "b"]);
+  s = commentsReducer(s, { type: "updated", comment: c("a", "edited") });
+  assert.equal(s.items[0].text, "edited");
+  s = commentsReducer(s, { type: "removed", id: "a" });
+  assert.deepEqual(s.items.map((x) => x.id), ["b"]);
+  s = commentsReducer(s, { type: "failed", key: "p2", error: "boom" });
+  assert.deepEqual([s.status, s.error], ["error", "boom"]);
+});
