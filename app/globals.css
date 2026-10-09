@@ -160,3 +160,11 @@ dialog[open]::backdrop {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Travel Tools: a tab's content eases in when first shown. */
+@keyframes tool-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
