@@ -231,7 +231,7 @@ export default function TripsInbox() {
   } else {
     content = (
       <div className="space-y-6">
-        <ul className="grid gap-5">
+        <ul role="list" className="grid gap-5">
           {view.items.map((trip, i) => (
             <motion.li
               key={trip.id}
@@ -288,6 +288,15 @@ export default function TripsInbox() {
             onSortChange={(value) => updateUrl({ sort: value })}
           />
         )}
+
+        {/* Announces result changes to screen readers (search, filters). */}
+        <p className="sr-only" role="status" aria-live="polite">
+          {!loading && !error && trips.length > 0
+            ? filtered.length === 0
+              ? "No trips match your filters."
+              : `${filtered.length} ${filtered.length === 1 ? "trip" : "trips"} found.`
+            : ""}
+        </p>
 
         {content}
       </div>

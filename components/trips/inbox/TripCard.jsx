@@ -58,13 +58,13 @@ export default function TripCard({ trip, onDelete }) {
       />
 
       <div className="space-y-5 p-5 sm:p-6">
-        <div className="flex items-start gap-4">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-3 sm:flex-nowrap">
+          <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
             <Plane className="h-6 w-6" aria-hidden="true" />
           </span>
 
           <div className="min-w-0 flex-1">
-            <h3 className="truncate text-lg font-semibold tracking-tight text-foreground sm:text-xl">
+            <h2 className="truncate text-lg font-semibold tracking-tight text-foreground sm:text-xl">
               {/* Stretched link: the whole card is clickable, one tab stop. */}
               <Link
                 href={`/trips/${trip.id}`}
@@ -72,7 +72,7 @@ export default function TripCard({ trip, onDelete }) {
               >
                 {trip.title}
               </Link>
-            </h3>
+            </h2>
             <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
               <span className="truncate">{trip.destination}</span>
@@ -84,7 +84,7 @@ export default function TripCard({ trip, onDelete }) {
             )}
           </div>
 
-          <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <div className="flex w-full shrink-0 flex-row flex-wrap items-center gap-x-3 gap-y-1.5 sm:w-auto sm:flex-col sm:items-end">
             <span
               className={cn(
                 "rounded-full px-2.5 py-1 text-xs font-medium",
@@ -144,7 +144,7 @@ export default function TripCard({ trip, onDelete }) {
               type="button"
               onClick={() => onDelete(trip)}
               aria-label={`Delete ${trip.title}`}
-              className={buttonVariants({ variant: "ghost", size: "icon", className: "hover:text-danger" })}
+              className={buttonVariants({ variant: "ghost", size: "icon", className: "h-10 w-10 hover:text-danger" })}
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" />
             </button>
