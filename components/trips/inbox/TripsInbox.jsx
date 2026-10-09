@@ -1,7 +1,8 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { CircleAlert, Map, Plus, RotateCw, SearchX } from "lucide-react";
 import { MotionConfig, motion } from "framer-motion";
 import { toast } from "sonner";
@@ -12,10 +13,12 @@ import { useAuth } from "@/context/AuthContext";
 import { deleteTrip, subscribeToUserTrips } from "@/lib/tripService";
 import {
   PAGE_SIZE,
+  buildInboxQuery,
   countByStatus,
   filterTrips,
   normalizeInboxTrip,
   paginate,
+  parseInboxParams,
   uniqueCategories,
 } from "@/lib/tripInbox";
 
@@ -46,11 +49,52 @@ export default function TripsInbox() {
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
 
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
-  const [category, setCategory] = useState("all");
-  const [sort, setSort] = useState("newest");
-  const [page, setPage] = useState(1);
+  // Filters live in the URL so Back, reload and shared links keep the view.
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const { query, status, category: urlCategory, sort, page } = useMemo(
+    () => parseInboxParams(searchParams),
+    [searchParams]
+  );
+
+  // The input is local so typing is instant; the URL is updated after a pause.
+  const [queryInput, setQueryInput] = useState(query);
+  const [syncedQuery, setSyncedQuery] = useState(query);
+  const debounceRef = useRef(null);
+
+  // Back/forward changed ?q= from outside: pull it into the input.
+  if (query !== syncedQuery) {
+    setSyncedQuery(query);
+    setQueryInput(query);
+  }
+
+  useEffect(() => () => clearTimeout(debounceRef.current), []);
+
+  const updateUrl = (patch, { push = false } = {}) => {
+    const qs = buildInboxQuery({ query, status, category: urlCategory, sort, page: 1, ...patch });
+    const href = qs ? `${pathname}?${qs}` : pathname;
+
+    // Filter tweaks replace the entry; only paging adds history.
+    if (push) router.push(href, { scroll: false });
+    else router.replace(href, { scroll: false });
+  };
+
+  // The debounce timer must see the filters as they are when it fires,
+  // not as they were when typing started.
+  const updateUrlRef = useRef(updateUrl);
+  useEffect(() => {
+    updateUrlRef.current = updateUrl;
+  });
+
+  const handleQueryChange = (value) => {
+    setQueryInput(value);
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSyncedQuery(value.trim());
+      updateUrlRef.current({ query: value });
+    }, 300);
+  };
 
   const [pendingDelete, setPendingDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -86,27 +130,23 @@ export default function TripsInbox() {
   // Typing stays responsive even with a long list.
   const deferredQuery = useDeferredValue(query);
 
+  const counts = useMemo(() => countByStatus(trips), [trips]);
+  const categories = useMemo(() => uniqueCategories(trips), [trips]);
+
+  // A stale ?type= (e.g. its last trip was deleted) falls back to "all".
+  const category = loading || categories.includes(urlCategory) ? urlCategory : "all";
+
   const filtered = useMemo(
     () => filterTrips(trips, { query: deferredQuery, status, category, sort }),
     [trips, deferredQuery, status, category, sort]
   );
-  const counts = useMemo(() => countByStatus(trips), [trips]);
-  const categories = useMemo(() => uniqueCategories(trips), [trips]);
   const view = paginate(filtered, page, PAGE_SIZE);
 
-  // Any change to the result set starts again from page 1.
-  const withReset = (setter) => (value) => {
-    setter(value);
-    setPage(1);
-  };
-
-  const hasFilters = query.trim() !== "" || status !== "all" || category !== "all";
-
   const clearFilters = () => {
-    setQuery("");
-    setStatus("all");
-    setCategory("all");
-    setPage(1);
+    clearTimeout(debounceRef.current);
+    setQueryInput("");
+    setSyncedQuery("");
+    updateUrl({ query: "", status: "all", category: "all" });
   };
 
   const closeDialog = () => {
@@ -209,7 +249,7 @@ export default function TripsInbox() {
           total={view.total}
           pageSize={PAGE_SIZE}
           onChange={(p) => {
-            setPage(p);
+            updateUrl({ page: p }, { push: true });
             window.scrollTo({ top: 0, behavior: "smooth" });
           }}
         />
@@ -236,16 +276,16 @@ export default function TripsInbox() {
 
         {!loading && !error && trips.length > 0 && (
           <TripsToolbar
-            query={query}
-            onQueryChange={withReset(setQuery)}
+            query={queryInput}
+            onQueryChange={handleQueryChange}
             status={status}
-            onStatusChange={withReset(setStatus)}
+            onStatusChange={(value) => updateUrl({ status: value })}
             counts={counts}
             category={category}
-            onCategoryChange={withReset(setCategory)}
+            onCategoryChange={(value) => updateUrl({ category: value })}
             categories={categories}
             sort={sort}
-            onSortChange={withReset(setSort)}
+            onSortChange={(value) => updateUrl({ sort: value })}
           />
         )}
 

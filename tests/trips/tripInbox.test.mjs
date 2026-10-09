@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  buildInboxQuery,
   countByStatus,
   daysUntil,
   filterTrips,
@@ -12,6 +13,7 @@ import {
   normalizeInboxTrip,
   paginate,
   parseDateOnly,
+  parseInboxParams,
   uniqueCategories,
 } from "../../lib/tripInbox.js";
 
@@ -135,4 +137,28 @@ test("paginate slices and clamps", () => {
   const empty = paginate([], 1, 6);
   assert.equal(empty.totalPages, 1);
   assert.equal(empty.total, 0);
+});
+
+test("parseInboxParams reads valid params", () => {
+  const state = parseInboxParams(
+    new URLSearchParams("q=  kerala  &status=upcoming&type=Family&sort=budget&page=3")
+  );
+  assert.deepEqual(state, { query: "kerala", status: "upcoming", category: "Family", sort: "budget", page: 3 });
+});
+
+test("parseInboxParams falls back to defaults for bad input", () => {
+  const state = parseInboxParams(new URLSearchParams("status=hacked&sort=nope&page=-4"));
+  assert.deepEqual(state, { query: "", status: "all", category: "all", sort: "newest", page: 1 });
+  assert.equal(parseInboxParams(new URLSearchParams("page=abc")).page, 1);
+  assert.equal(parseInboxParams(null).status, "all");
+});
+
+test("buildInboxQuery omits defaults and round-trips", () => {
+  assert.equal(buildInboxQuery({}), "");
+  assert.equal(buildInboxQuery({ query: "  " , page: 1 }), "");
+
+  const state = { query: "goa beach", status: "completed", category: "Solo", sort: "name", page: 2 };
+  const qs = buildInboxQuery(state);
+  assert.ok(qs.includes("q=goa+beach") && qs.includes("page=2"));
+  assert.deepEqual(parseInboxParams(new URLSearchParams(qs)), state);
 });
