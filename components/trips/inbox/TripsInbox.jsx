@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import Button, { buttonVariants } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { useAuth } from "@/context/AuthContext";
-import { deleteTrip, getUserTrips } from "@/lib/tripService";
+import { deleteTrip, subscribeToUserTrips } from "@/lib/tripService";
 import {
   PAGE_SIZE,
   countByStatus,
@@ -56,32 +56,25 @@ export default function TripsInbox() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
+  // Live subscription: the list updates itself when trips change. State is
+  // only set inside the snapshot callbacks, never synchronously in the effect.
   useEffect(() => {
     if (!user) return;
 
-    // `cancelled` stops a stale update after unmount or a user change.
-    let cancelled = false;
-
-    (async () => {
-      try {
-        const data = await getUserTrips(user.uid);
-        if (cancelled) return;
-
+    return subscribeToUserTrips(
+      user.uid,
+      (data) => {
         const now = new Date();
         setTrips(data.map((trip) => normalizeInboxTrip(trip, now)));
-      } catch (err) {
-        if (cancelled) return;
-
+        setError("");
+        setLoading(false);
+      },
+      (err) => {
         console.error("Failed to load trips:", err);
         setError("We couldn’t load your trips. Check your connection and try again.");
-      } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
       }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    );
   }, [user, reloadKey]);
 
   const retry = () => {
@@ -133,7 +126,6 @@ export default function TripsInbox() {
         userId: user.uid,
         title: pendingDelete.title,
       });
-      setTrips((prev) => prev.filter((t) => t.id !== pendingDelete.id));
       toast.success(`Deleted “${pendingDelete.title}”`);
       setPendingDelete(null);
     } catch (err) {
