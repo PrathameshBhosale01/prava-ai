@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+
+// Expenses now live in Travel Tools. Kept so old links and bookmarks still work.
 export default function ExpensesPage() {
-  return <h1 className="text-3xl font-bold">Expenses</h1>;
+  redirect("/tools?tab=expenses");
 }

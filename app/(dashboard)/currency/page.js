@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+
+// The converter now lives in Travel Tools. Kept so old links and bookmarks still work.
 export default function CurrencyPage() {
-  return <h1 className="text-3xl font-bold">Currency</h1>;
+  redirect("/tools?tab=currency");
 }
