@@ -17,6 +17,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Prava AI",
   description: "AI-powered trip planning and travel assistant",
+    icons: {
+    icon: "/logo2.png",
+    shortcut: "/logo2.png",
+    apple: "/logo2.png",
+    },
 };
 
 export default function RootLayout({ children }) {
