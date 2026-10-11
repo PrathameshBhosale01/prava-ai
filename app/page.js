@@ -1,3 +1,4 @@
+import SplashScreen from "@/components/providers/SplashScreen";
 import Navbar from "@/components/Marketing/Navbar";
 import Hero from "@/components/Marketing/Hero";
 import Features from "@/components/Marketing/Features";
@@ -10,6 +11,7 @@ import Footer from "@/components/Marketing/Footer";
 export default function Home() {
   return (
     <main>
+       <SplashScreen />
       <Navbar />
 
       <div id="home">

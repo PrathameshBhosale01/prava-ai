@@ -168,3 +168,29 @@ dialog[open]::backdrop {
     transform: translateY(4px);
   }
 }
+/* Landing splash: */
+
+@keyframes splash-fill {
+  from {
+    width: 0;
+  }
+}
+
+@keyframes splash-float {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes splash-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.splash-root {
+  animation: splash-failsafe 0.4s ease 6s forwards;
+}
+
