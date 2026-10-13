@@ -1,11 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, Clock, Compass, ExternalLink, Hourglass, Navigation, Route, Star, Sun, Wallet } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, Compass, ExternalLink, Hourglass, MapPin, Navigation, Route, Star, Sun, Wallet } from "lucide-react";
 
-import { activityLinks } from "@/lib/tripDetails";
+import { activityLinks, formatMoney, mapsDirectionsUrl } from "@/lib/tripDetails";
 import { cn } from "@/lib/utils";
 
+import ModeIcon from "./ModeIcon";
 import SectionCard from "./SectionCard";
 
 function Detail({ icon: Icon, label, children }) {
@@ -22,8 +23,43 @@ function Detail({ icon: Icon, label, children }) {
 
 const linkClass = "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-xs font-medium transition-colors";
 
-function ActivityCard({ activity, trip }) {
-  const links = activityLinks(activity, trip);
+/** A journey between two cities (or to / from home), shown at the top of the day it happens. */
+function TransferCard({ transfer, trip }) {
+  const facts = [
+    transfer.mode && transfer.mode,
+    transfer.duration,
+    transfer.price != null && `about ${formatMoney(transfer.price, trip.currency)} for ${Number(trip.travelers) === 1 ? "1 traveler" : `all ${trip.travelers || 1} travelers`}`,
+  ].filter(Boolean);
+
+  return (
+    <div className="mt-4 flex break-inside-avoid items-start gap-3 rounded-xl border border-info/30 bg-info-soft px-4 py-3">
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface text-info">
+        <ModeIcon mode={transfer.mode} className="h-4 w-4" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-foreground">
+          <span className="sr-only">Journey: </span>
+          {transfer.from} → {transfer.to}
+        </p>
+        {facts.length > 0 && <p className="mt-0.5 text-xs text-muted-foreground">{facts.join(" · ")}</p>}
+        {transfer.notes && <p className="mt-1 text-xs text-foreground/80">{transfer.notes}</p>}
+      </div>
+      <a
+        href={mapsDirectionsUrl(transfer.to, transfer.from)}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Directions from ${transfer.from} to ${transfer.to} (opens in a new tab)`}
+        className="inline-flex h-7 shrink-0 items-center gap-1 rounded-md bg-blue-600 px-2.5 text-xs font-medium text-white transition-colors hover:bg-blue-700 print:hidden"
+      >
+        <Navigation className="h-3 w-3" aria-hidden="true" />
+        Route
+      </a>
+    </div>
+  );
+}
+
+function ActivityCard({ activity, trip, city }) {
+  const links = activityLinks(activity, trip, city);
   const details = [
     [Wallet, "Price", activity.price],
     [Hourglass, "Duration", activity.duration],
@@ -96,10 +132,11 @@ function ActivityCard({ activity, trip }) {
  * tab is in the Tab order, Arrow keys / Home / End move between days. For printing, every
  * day's panel is shown (print:block) so the PDF contains the whole itinerary.
  */
-export default function ItinerarySection({ days, trip }) {
+export default function ItinerarySection({ days, trip, stops = null }) {
   const [active, setActive] = useState(0);
   const tabRefs = useRef([]);
   const last = days.length - 1;
+  const activeStopId = days[active]?.stopId;
 
   function go(index) {
     const next = Math.min(Math.max(index, 0), last);
@@ -117,6 +154,31 @@ export default function ItinerarySection({ days, trip }) {
 
   return (
     <SectionCard id="trip-itinerary" icon={Route} title="Day-by-day itinerary" tone="info">
+      {stops && (
+        <div role="group" aria-label="Jump to a city" className="mb-4 flex flex-wrap gap-2 print:hidden">
+          {stops
+            .filter((stop) => stop.days.length > 0)
+            .map((stop) => (
+              <button
+                key={stop.id}
+                type="button"
+                aria-pressed={stop.id === activeStopId}
+                onClick={() => go(days.findIndex((day) => day.stopId === stop.id))}
+                className={cn(
+                  "inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors",
+                  stop.id === activeStopId ? "border-info bg-info-soft text-info" : "border-border bg-surface text-muted-foreground hover:border-info/40 hover:text-foreground",
+                )}
+              >
+                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                {stop.city}{" "}
+                <span className="font-normal opacity-80">
+                  {stop.days.length === 1 ? `Day ${stop.days[0].day}` : `Days ${stop.days[0].day}–${stop.days[stop.days.length - 1].day}`}
+                </span>
+              </button>
+            ))}
+        </div>
+      )}
+
       <div className="flex items-center gap-2 print:hidden">
         <button
           type="button"
@@ -136,7 +198,7 @@ export default function ItinerarySection({ days, trip }) {
               type="button"
               role="tab"
               id={`day-tab-${i}`}
-              aria-label={`Day ${day.day}${day.dateLabel ? `, ${day.dateLabel}` : ""}`}
+              aria-label={`Day ${day.day}${day.dateLabel ? `, ${day.dateLabel}` : ""}${day.city ? `, ${day.city}` : ""}`}
               aria-selected={i === active}
               aria-controls={`day-panel-${i}`}
               tabIndex={i === active ? 0 : -1}
@@ -148,6 +210,7 @@ export default function ItinerarySection({ days, trip }) {
             >
               <span className="block font-semibold">Day {day.day}</span>
               {day.dateLabel && <span className={cn("block text-[11px] font-normal", i === active ? "text-primary-foreground/85" : "text-muted-foreground")}>{day.dateLabel}</span>}
+              {day.city && <span className={cn("block text-[11px] font-medium", i === active ? "text-primary-foreground" : "text-info")}>{day.city}</span>}
             </button>
           ))}
         </div>
@@ -168,10 +231,17 @@ export default function ItinerarySection({ days, trip }) {
           <h3 className="rounded-xl bg-info-soft px-4 py-3 text-center text-lg font-semibold text-info">
             Day {day.day} · {day.title}
             {day.dateLabel && <span className="ml-2 text-sm font-normal text-info/80">{day.dateLabel}</span>}
+            {day.city && (
+              <span className="mt-1 flex items-center justify-center gap-1 text-xs font-medium text-info/90">
+                <MapPin className="h-3.5 w-3.5" aria-hidden="true" />
+                {day.city}
+              </span>
+            )}
           </h3>
+          {day.transfer && <TransferCard transfer={day.transfer} trip={trip} />}
           <ul className="mt-4 grid gap-4 md:grid-cols-2">
             {day.activities.map((activity, index) => (
-              <ActivityCard key={`${activity.time}-${activity.title}-${index}`} activity={activity} trip={trip} />
+              <ActivityCard key={`${activity.time}-${activity.title}-${index}`} activity={activity} trip={trip} city={day.stopPlace} />
             ))}
           </ul>
         </div>

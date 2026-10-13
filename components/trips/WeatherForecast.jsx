@@ -15,7 +15,7 @@ function Message({ children }) {
   return <p className="mt-4 text-sm text-muted-foreground">{children}</p>;
 }
 
-export default function WeatherForecast({ destination, startDate, duration }) {
+export default function WeatherForecast({ destination, startDate, duration, title = "Weather" }) {
   const [state, setState] = useState({ status: "loading" });
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function WeatherForecast({ destination, startDate, duration }) {
 
   return (
     <div className="rounded-xl border bg-surface p-6">
-      <h2 className="text-xl font-semibold">Weather</h2>
+      <h2 className="text-xl font-semibold">{title}</h2>
 
       {status === "loading" && <Message>Loading forecast...</Message>}
 

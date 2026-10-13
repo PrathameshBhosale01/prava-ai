@@ -1,8 +1,9 @@
 "use client";
 
-import { Printer, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Pencil, Printer, Trash2 } from "lucide-react";
 
-import Button from "@/components/ui/Button";
+import Button, { buttonVariants } from "@/components/ui/Button";
 
 /**
  * Opens the browser's print dialog ("Save as PDF" is one of its destinations).
@@ -20,9 +21,15 @@ export function printTrip(title) {
 }
 
 /** Header buttons, styled for the gradient banner. Not printed. */
-export default function TripActions({ title, onDelete }) {
+export default function TripActions({ title, onDelete, editHref }) {
   return (
     <div className="flex flex-wrap gap-2 print:hidden">
+      {editHref && (
+        <Link href={editHref} className={buttonVariants({ variant: "inverse", size: "sm" })}>
+          <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+          Edit trip
+        </Link>
+      )}
       <Button variant="inverse" size="sm" onClick={() => printTrip(title)}>
         <Printer className="h-3.5 w-3.5" aria-hidden="true" />
         Print / Save PDF

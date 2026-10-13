@@ -1,6 +1,9 @@
 import { CalendarDays, MapPin, Navigation, Tag, Users, Wallet } from "lucide-react";
 
 import { formatDateRange, formatMoney, tripEndDate } from "@/lib/tripDetails";
+import { routeSummary } from "@/lib/trips/stops";
+
+import RouteStrip from "./RouteStrip";
 
 function Fact({ icon: Icon, label, children }) {
   return (
@@ -17,6 +20,8 @@ function Fact({ icon: Icon, label, children }) {
 /** Banner with the trip's name and key facts. `actions` (print / delete…) sit in the top-right. */
 export default function TripHeader({ trip, actions }) {
   const dates = formatDateRange(trip.startDate, tripEndDate(trip));
+  const route = routeSummary(trip);
+  const multi = route.count > 1;
   const duration = trip.duration ? `${trip.duration} ${Number(trip.duration) === 1 ? "day" : "days"}` : "";
 
   return (
@@ -30,8 +35,8 @@ export default function TripHeader({ trip, actions }) {
       </div>
 
       <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        <Fact icon={MapPin} label="Destination">
-          {trip.destination}
+        <Fact icon={MapPin} label={multi ? "Destinations" : "Destination"}>
+          {multi ? route.badge : trip.destination}
         </Fact>
         <Fact icon={Navigation} label="Starting from">
           {trip.startingFrom}
@@ -49,6 +54,8 @@ export default function TripHeader({ trip, actions }) {
           {trip.budget ? formatMoney(trip.budget, trip.currency) : ""}
         </Fact>
       </dl>
+
+      <RouteStrip trip={trip} />
 
       {trip.interests?.length > 0 && (
         <ul className="mt-5 flex flex-wrap gap-2" aria-label="Interests">

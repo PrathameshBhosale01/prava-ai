@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Clock,
   MapPin,
+  Pencil,
   Plane,
   Sparkles,
   Trash2,
@@ -75,7 +76,12 @@ export default function TripCard({ trip, onDelete }) {
             </h2>
             <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span className="truncate">{trip.destination}</span>
+              <span className="truncate">{trip.routeLabel || trip.destination}</span>
+              {trip.routeBadge && (
+                <span className="shrink-0 rounded-full bg-info-soft px-2 py-0.5 text-[11px] font-medium text-info">
+                  {trip.routeBadge}
+                </span>
+              )}
             </p>
             {trip.startingFrom && (
               <p className="mt-0.5 truncate text-xs text-muted-foreground">
@@ -140,6 +146,13 @@ export default function TripCard({ trip, onDelete }) {
           </span>
 
           <div className="relative z-10 flex items-center gap-2">
+            <Link
+              href={`/trips/${trip.id}/edit`}
+              aria-label={`Edit ${trip.title}`}
+              className={buttonVariants({ variant: "ghost", size: "icon", className: "h-10 w-10 hover:text-primary" })}
+            >
+              <Pencil className="h-4 w-4" aria-hidden="true" />
+            </Link>
             <button
               type="button"
               onClick={() => onDelete(trip)}

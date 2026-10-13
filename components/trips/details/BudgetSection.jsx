@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import SectionCard from "./SectionCard";
 
 /** Estimated costs by category, compared with the traveler's own budget. */
-export default function BudgetSection({ budget, trip }) {
+export default function BudgetSection({ budget, trip, cityBudgets = [], transferTotal = 0 }) {
   const money = (value) => formatMoney(value, trip.currency);
   const barTone = budget.over ? "bg-danger" : budget.usedPercent >= 90 ? "bg-warning" : "bg-success";
 
@@ -33,6 +33,35 @@ export default function BudgetSection({ budget, trip }) {
           </li>
         ))}
       </ul>
+
+      {(cityBudgets.length > 0 || transferTotal > 0) && (
+        <div className="mt-6 border-t border-border pt-4">
+          <h3 className="text-sm font-semibold text-foreground">By city</h3>
+          <ul className="mt-3 space-y-3">
+            {cityBudgets.map((city) => (
+              <li key={city.stopId} className="text-sm">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-foreground">{city.city}</span>
+                  <span className="font-semibold tabular-nums text-foreground">{money(city.total)}</span>
+                </div>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {[city.accommodation > 0 && `Stay ${money(city.accommodation)}`, city.food > 0 && `Food ${money(city.food)}`, city.activities > 0 && `Activities ${money(city.activities)}`].filter(Boolean).join(" · ")}
+                </p>
+              </li>
+            ))}
+            {transferTotal > 0 && (
+              <li className="text-sm">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-foreground">Journeys</span>
+                  <span className="font-semibold tabular-nums text-foreground">{money(transferTotal)}</span>
+                </div>
+                <p className="mt-0.5 text-xs text-muted-foreground">Flights, trains and other travel between cities, from the plan above.</p>
+              </li>
+            )}
+          </ul>
+          <p className="mt-3 text-xs text-muted-foreground">City figures are separate estimates and may not add up exactly to the total below.</p>
+        </div>
+      )}
 
       <div className="mt-5 border-t border-border pt-4">
         <div className="flex items-baseline justify-between gap-3">

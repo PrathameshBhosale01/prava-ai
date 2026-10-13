@@ -32,7 +32,7 @@ export default function RecentTrips({ trips }) {
               {trips.map((t) => (
                 <tr key={t.id} className="border-b border-border last:border-0">
                   <td className="max-w-[16rem] truncate py-3 pr-4 font-medium text-foreground">
-                    {t.destination || t.title || "Untitled trip"}
+                    {t.routeLabel || t.destination || t.title || "Untitled trip"}
                   </td>
                   <td className="px-4 py-3">
                     <span className="inline-flex rounded-full bg-success-soft px-2.5 py-0.5 text-xs font-medium text-success tabular-nums">

@@ -16,6 +16,8 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { isMultiStop, routeLabel, routeSummary } from "@/lib/trips/stops";
+
 function formatMoney(amount, currency) {
   try {
     return new Intl.NumberFormat(currency === "INR" ? "en-IN" : "en-US", {
@@ -61,7 +63,10 @@ function DayRow({ day, open, onToggle }) {
          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
           {day.day}
         </span>
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">{day.title}</span>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+          {day.title}
+          {day.city && <span className="font-normal text-muted-foreground"> · {day.city}</span>}
+        </span>
         {day.date && <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">{formatDate(day.date)}</span>}
         <ChevronDown size={16} className={`shrink-0 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
@@ -125,8 +130,15 @@ export default function PlanCard({ plan, saving, error, onSave }) {
             <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
               <span>{trip.startingFrom}</span>
               <ArrowRight size={13} className="shrink-0" />
-              <span>{trip.destination}</span>
+              {isMultiStop(trip) ? (
+                <span>{routeLabel(trip)}</span>
+              ) : (
+                <span>{trip.destination}</span>
+              )}
             </p>
+            {isMultiStop(trip) && (
+              <p className="mt-1 text-xs text-muted-foreground">{routeSummary(trip).badge}</p>
+            )}
           </div>
         </div>
 

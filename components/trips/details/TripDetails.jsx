@@ -10,6 +10,7 @@ import Button, { buttonVariants } from "@/components/ui/Button";
 import Skeleton from "@/components/ui/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { buildItineraryView } from "@/lib/tripDetails";
+import { buildSchedule, isItineraryStale } from "@/lib/trips/stops";
 import { deleteTrip, getTrip } from "@/lib/tripService";
 import CurrencyConverter from "@/components/trips/CurrencyConverter";
 import GenerateItineraryButton from "@/components/trips/GenerateItineraryButton";
@@ -21,6 +22,7 @@ import BudgetSection from "./BudgetSection";
 import ItinerarySection from "./ItinerarySection";
 import PrintStyles from "./PrintStyles";
 import SectionCard from "./SectionCard";
+import { RouteCurrency, RouteWeather } from "./RouteExtras";
 import TipsSections from "./TipsSections";
 import TripActions from "./TripActions";
 import TripHeader from "./TripHeader";
@@ -142,13 +144,24 @@ export default function TripDetails({ id }) {
 
   const trip = state.trip;
   const view = buildItineraryView(trip.itinerary, trip);
+  const schedule = buildSchedule(trip);
+  const multi = schedule.stops.length > 1;
+
+  // Why a saved plan might no longer fit the trip (null = it fits).
+  const refreshReason = !view
+    ? null
+    : isItineraryStale(trip)
+      ? "You changed this trip's route or dates after the plan was made. Create a new plan so the days, hotels and journeys match."
+      : multi && !view.routeAware
+        ? `This plan was made before multi-city planning, so it only covers ${schedule.stops[0].place.split(",")[0]}. Create a new plan to cover all ${schedule.stops.length} cities.`
+        : null;
   const onGenerated = (itinerary) => setState((s) => ({ ...s, trip: { ...s.trip, itinerary, itineraryGeneratedAt: { seconds: Date.now() } } }));
 
   return (
     <div id="trip-print-area" className="mx-auto max-w-5xl space-y-6">
       <PrintStyles />
       <BackLink />
-      <TripHeader trip={trip} actions={<TripActions title={trip.title} onDelete={() => setConfirmingDelete(true)} />} />
+      <TripHeader trip={trip} actions={<TripActions title={trip.title} editHref={`/trips/${trip.id}/edit`} onDelete={() => setConfirmingDelete(true)} />} />
 
       {view ? (
         <>
@@ -156,16 +169,23 @@ export default function TripDetails({ id }) {
             <p className="text-sm leading-relaxed text-foreground/90 sm:text-base">{view.summary}</p>
           </SectionCard>
 
-          {!view.isRich && (
+          {refreshReason && (
+            <div className="space-y-3 print:hidden">
+              <Notice tone="warning">{refreshReason}</Notice>
+              <GenerateItineraryButton tripId={trip.id} hasItinerary onGenerated={onGenerated} />
+            </div>
+          )}
+
+          {!refreshReason && !view.isRich && (
             <div className="space-y-3 print:hidden">
               <Notice>This plan was created before hotel suggestions, a budget breakdown and travel tips were added. Upgrade it to get the full version.</Notice>
               <GenerateItineraryButton tripId={trip.id} hasItinerary onGenerated={onGenerated} />
             </div>
           )}
 
-          {view.accommodations.length > 0 && <AccommodationSection hotels={view.accommodations} trip={trip} />}
-          <ItinerarySection key={trip.itineraryGeneratedAt?.seconds ?? "plan"} days={view.days} trip={trip} />
-          {view.budget && <BudgetSection budget={view.budget} trip={trip} />}
+          {view.accommodations.length > 0 && <AccommodationSection hotels={view.accommodations} trip={trip} stops={view.stops} />}
+          <ItinerarySection key={trip.itineraryGeneratedAt?.seconds ?? "plan"} days={view.days} trip={trip} stops={view.stops} />
+          {view.budget && <BudgetSection budget={view.budget} trip={trip} cityBudgets={view.cityBudgets} transferTotal={view.transferTotal} />}
           <TipsSections view={view} />
 
           {view.isRich && (
@@ -188,8 +208,17 @@ export default function TripDetails({ id }) {
       )}
 
       <div className="space-y-6 print:hidden">
-        <WeatherForecast destination={trip.destination} startDate={trip.startDate} duration={trip.duration} />
-        <CurrencyConverter destination={trip.destination} from={trip.currency} amount={trip.budget} travelers={trip.travelers} duration={trip.duration} />
+        {multi ? (
+          <>
+            <RouteWeather stops={schedule.stops} />
+            <RouteCurrency stops={schedule.stops} trip={trip} />
+          </>
+        ) : (
+          <>
+            <WeatherForecast destination={trip.destination} startDate={trip.startDate} duration={trip.duration} />
+            <CurrencyConverter destination={trip.destination} from={trip.currency} amount={trip.budget} travelers={trip.travelers} duration={trip.duration} />
+          </>
+        )}
       </div>
 
       <SectionCard id="trip-preferences" icon={Compass} title="Trip preferences" tone="info">
@@ -199,7 +228,7 @@ export default function TripDetails({ id }) {
             <dd className="mt-0.5 font-medium text-foreground">{trip.accommodation || "—"}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Transportation</dt>
+            <dt className="text-muted-foreground">{multi ? "Default transportation" : "Transportation"}</dt>
             <dd className="mt-0.5 font-medium text-foreground">{trip.transportation || "—"}</dd>
           </div>
           {trip.description && (

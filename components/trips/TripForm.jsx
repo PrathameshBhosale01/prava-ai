@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { createTrip } from "@/lib/tripService";
+import { createTrip, updateTrip } from "@/lib/tripService";
 import { TRAVEL_INTERESTS as interestOptions } from "@/lib/travelInterests";
+import { MAX_TRIP_DAYS, validateRoute } from "@/lib/trips/stops";
+import { buildTripFields, buildUpdate, routeChanged, tripToFormState } from "@/lib/trips/editTrip";
+import { buttonVariants } from "@/components/ui/Button";
+import RouteBuilder from "@/components/trips/route/RouteBuilder";
 
 
 const categoryOptions = [
@@ -35,28 +41,45 @@ const transportationOptions = [
   "Mixed",
 ];
 
-export default function TripForm() {
-  const router = useRouter();
-  const { user } = useAuth();
-
-  const [formData, setFormData] = useState({
+const EMPTY_TRIP = {
+  formData: {
     title: "",
     category: "",
     description: "",
-    destination: "",
-    startingFrom: "",
     budget: "",
     currency: "INR",
-    duration: "",
     travelers: 1,
     startDate: "",
     interests: [],
     accommodation: "",
     transportation: "",
-  });
+  },
+  startingFrom: "",
+  stops: [{ id: "stop-1", place: "", nights: 3 }],
+  end: { mode: "return", place: "" },
+};
+
+/**
+ * The trip form. Without `trip` it creates a new trip; with a saved `trip` it edits that one
+ * (same fields, same checks) and saves changes instead.
+ */
+export default function TripForm({ trip = null }) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const editing = Boolean(trip);
+
+  const [initial] = useState(() => (trip ? tripToFormState(trip) : EMPTY_TRIP));
+  const [formData, setFormData] = useState(initial.formData);
+
+  // The route: where you start, the ordered destinations, and how the trip ends.
+  const [startingFrom, setStartingFrom] = useState(initial.startingFrom);
+  const [stops, setStops] = useState(initial.stops);
+  const [end, setEnd] = useState(initial.end);
 
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const route = validateRoute({ stops, startingFrom, transportation: formData.transportation });
 
     const handleChange = (event) => {
     const { name, value } = event.target;
@@ -92,20 +115,20 @@ export default function TripForm() {
       return "Please select a trip category.";
     }
 
-    if (!formData.destination.trim()) {
-      return "Destination is required.";
+    if (!startingFrom.trim()) {
+      return "Starting location is required.";
     }
 
-    if (!formData.startingFrom.trim()) {
-      return "Starting location is required.";
+    if (!route.ok) {
+      return route.error;
+    }
+
+    if (end.mode === "elsewhere" && !end.place.trim()) {
+      return "Enter where the trip ends, or choose another option.";
     }
 
     if (!formData.budget || Number(formData.budget) <= 0) {
       return "Budget must be greater than zero.";
-    }
-
-    if (!formData.duration || Number(formData.duration) <= 0) {
-      return "Duration must be greater than zero.";
     }
 
     if (!formData.travelers || Number(formData.travelers) <= 0) {
@@ -144,34 +167,30 @@ export default function TripForm() {
     }
 
     if (!user) {
-      setError("You must be logged in to create a trip.");
+      setError(`You must be logged in to ${editing ? "edit" : "create"} a trip.`);
       return;
     }
 
     try {
       setSaving(true);
 
-      const tripId = await createTrip(user.uid, {
-        title: formData.title.trim(),
-        category: formData.category,
-        description: formData.description.trim(),
-        destination: formData.destination.trim(),
-        startingFrom: formData.startingFrom.trim(),
-        budget: Number(formData.budget),
-        currency: formData.currency,
-        duration: Number(formData.duration),
-        travelers: Number(formData.travelers),
-        startDate: formData.startDate,
-        interests: formData.interests,
-        accommodation: formData.accommodation,
-        transportation: formData.transportation,
-      });
+      const fields = buildTripFields({ formData, startingFrom, stops: route.stops, end });
 
-    //   router.push(`/trips/${tripId}`);
-      router.push("/trips");
+      if (editing) {
+        await updateTrip(trip.id, buildUpdate(trip, fields), { userId: user.uid });
+        toast.success("Trip updated");
+        router.push(`/trips/${trip.id}`);
+      } else {
+        await createTrip(user.uid, fields);
+        router.push("/trips");
+      }
     } catch (error) {
-      console.error("Failed to create trip:", error);
-      setError("Failed to create trip. Please try again.");
+      console.error(`Failed to ${editing ? "update" : "create"} trip:`, error);
+      setError(
+        error?.code === "permission-denied"
+          ? "You don't have permission to change this trip."
+          : `Failed to ${editing ? "save your changes" : "create trip"}. Please try again.`
+      );
     } finally {
       setSaving(false);
     }
@@ -179,6 +198,15 @@ export default function TripForm() {
 const today = new Date()
   .toISOString()
   .split("T")[0];
+
+  // Editing a trip that already started must not force a new date; just never allow going further back.
+  const earliestStart = editing && trip.startDate && trip.startDate < today ? trip.startDate : today;
+
+  const planOutOfDate =
+    editing &&
+    Boolean(trip.itinerary) &&
+    routeChanged(trip, buildTripFields({ formData, startingFrom, stops: route.stops, end }));
+  const tooLong = editing && Number(trip.duration) > MAX_TRIP_DAYS;
 
     return (
     <form
@@ -254,43 +282,37 @@ const today = new Date()
         </div>
       </section>
 
-            {/* Destination */}
+      {/* Route */}
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold">
-          Destination
-        </h2>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Destination
-            </label>
-
-            <input
-              type="text"
-              name="destination"
-              value={formData.destination}
-              onChange={handleChange}
-              placeholder="e.g. Goa, India"
-              className="w-full rounded-lg border px-4 py-3"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Starting From
-            </label>
-
-            <input
-              type="text"
-              name="startingFrom"
-              value={formData.startingFrom}
-              onChange={handleChange}
-              placeholder="e.g. Mumbai"
-              className="w-full rounded-lg border px-4 py-3"
-            />
-          </div>
+        <div>
+          <h2 className="text-xl font-semibold">Route</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Going to one place or several? Add each city in the order you will visit it.
+          </p>
         </div>
+
+        <RouteBuilder
+          startingFrom={startingFrom}
+          onStartingFromChange={setStartingFrom}
+          stops={stops}
+          onStopsChange={setStops}
+          end={end}
+          onEndChange={setEnd}
+          startDate={formData.startDate}
+          transportation={formData.transportation}
+          warnings={route.warnings}
+        />
+
+        {planOutOfDate && (
+          <p role="note" className="rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-foreground">
+            Changing the route or dates makes your saved plan out of date. After saving, create a new plan on the trip page.
+          </p>
+        )}
+        {tooLong && (
+          <p role="note" className="rounded-lg border border-warning/30 bg-warning-soft px-4 py-3 text-sm text-foreground">
+            This trip was planned for {trip.duration} days. Trips are now limited to {MAX_TRIP_DAYS} days, so saving will shorten it.
+          </p>
+        )}
       </section>
 
             {/* Trip Details */}
@@ -299,7 +321,7 @@ const today = new Date()
           Trip Details
         </h2>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-3">
           <div>
             <label className="mb-2 block text-sm font-medium">
               Budget
@@ -336,23 +358,6 @@ const today = new Date()
 
           <div>
             <label className="mb-2 block text-sm font-medium">
-              Duration (days)
-            </label>
- 
-             <input
-              type="number"
-              name="duration"
-              max="365"
-              value={formData.duration}
-              onChange={handleChange}
-              min="1"
-              placeholder="4"
-              className="w-full rounded-lg border px-4 py-3"
-            />
-          </div>
-
-          <div>
-            <label className="mb-2 block text-sm font-medium">
               Travelers
             </label>
 
@@ -377,7 +382,7 @@ const today = new Date()
   name="startDate"
   value={formData.startDate}
   onChange={handleChange}
-  min={today}
+  min={earliestStart}
   className="w-full rounded-lg border px-4 py-3"
 />
         </div>
@@ -488,13 +493,20 @@ const today = new Date()
         </div>
       </section>
 
-            <button
-        type="submit"
-        disabled={saving}
-        className="w-full rounded-lg bg-primary px-6 py-3 font-medium text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {saving ? "Creating Trip..." : "Create Trip"}
-      </button>
+      <div className="flex flex-col gap-3 sm:flex-row-reverse">
+        <button
+          type="submit"
+          disabled={saving}
+          className="w-full rounded-lg bg-primary px-6 py-3 font-medium text-white hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {editing ? (saving ? "Saving..." : "Save changes") : saving ? "Creating Trip..." : "Create Trip"}
+        </button>
+        {editing && (
+          <Link href={`/trips/${trip.id}`} className={buttonVariants({ variant: "outline", size: "lg", className: "w-full sm:w-auto sm:px-8" })}>
+            Cancel
+          </Link>
+        )}
+      </div>
     </form>
   );
 }

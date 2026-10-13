@@ -11,9 +11,9 @@ const LINKS = [
   { key: "maps", label: "Maps", className: "bg-slate-800 text-white hover:bg-slate-900" },
 ];
 
-function HotelCard({ hotel, trip }) {
-  const links = hotelLinks(hotel, trip);
-  const nights = tripNights(trip);
+function HotelCard({ hotel, trip, stop }) {
+  const links = hotelLinks(hotel, trip, stop);
+  const nights = stop ? stop.nights : tripNights(trip);
 
   return (
     <li className="flex break-inside-avoid flex-col overflow-hidden rounded-xl border border-border bg-background">
@@ -78,19 +78,47 @@ function HotelCard({ hotel, trip }) {
   );
 }
 
-export default function AccommodationSection({ hotels, trip }) {
+function HotelGrid({ hotels, trip, stop }) {
+  return (
+    <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {hotels.map((hotel) => (
+        <HotelCard key={`${stop?.id ?? "trip"}-${hotel.name}`} hotel={hotel} trip={trip} stop={stop} />
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * Hotel options. On a multi-city trip (`stops` given) they are grouped by city, and each hotel's
+ * booking links use that city's own check-in and check-out dates.
+ */
+export default function AccommodationSection({ hotels, trip, stops = null }) {
+  const groups = stops ? stops.filter((stop) => stop.hotels.length > 0) : [];
+
   return (
     <SectionCard
       id="trip-stay"
       icon={BedDouble}
       title="Accommodation options"
-      note="AI suggestions. Prices and availability change, so check the current rate before you book."
+      note={`AI suggestions${groups.length > 0 ? " for each city" : ""}. Prices and availability change, so check the current rate before you book.`}
     >
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {hotels.map((hotel) => (
-          <HotelCard key={hotel.name} hotel={hotel} trip={trip} />
-        ))}
-      </ul>
+      {groups.length > 0 ? (
+        <div className="space-y-7">
+          {groups.map((stop) => (
+            <div key={stop.id}>
+              <h3 className="mb-3 flex flex-wrap items-baseline gap-x-2 text-base font-semibold text-foreground">
+                {stop.city}{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  {stop.stayLabel} · {stop.nights} {stop.nights === 1 ? "night" : "nights"}
+                </span>
+              </h3>
+              <HotelGrid hotels={stop.hotels} trip={trip} stop={stop} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <HotelGrid hotels={hotels} trip={trip} />
+      )}
     </SectionCard>
   );
 }
