@@ -130,7 +130,9 @@ function ActivityCard({ activity, trip, city }) {
 /**
  * Day tabs + the selected day's activities. Follows the WAI-ARIA tabs pattern: only the active
  * tab is in the Tab order, Arrow keys / Home / End move between days. For printing, every
- * day's panel is shown (print:block) so the PDF contains the whole itinerary.
+ * day's panel is shown (print:block) so the PDF contains the whole itinerary. Inactive panels are
+ * hidden with the `hidden` CLASS, not the HTML attribute: Tailwind's base styles mark
+ * [hidden] as !important, which beats `print:block` and left only the open day in the PDF.
  */
 export default function ItinerarySection({ days, trip, stops = null }) {
   const [active, setActive] = useState(0);
@@ -227,8 +229,8 @@ export default function ItinerarySection({ days, trip, stops = null }) {
       </div>
 
       {days.map((day, i) => (
-        <div key={day.day} role="tabpanel" id={`day-panel-${i}`} aria-labelledby={`day-tab-${i}`} hidden={i !== active} className="mt-5 print:mt-6 print:!block">
-          <h3 className="rounded-xl bg-info-soft px-4 py-3 text-center text-lg font-semibold text-info">
+        <div key={day.day} role="tabpanel" id={`day-panel-${i}`} aria-labelledby={`day-tab-${i}`} className={cn("mt-5 print:mt-6 print:block", i !== active && "hidden")}>
+          <h3 className="break-after-avoid rounded-xl bg-info-soft px-4 py-3 text-center text-lg font-semibold text-info">
             Day {day.day} · {day.title}
             {day.dateLabel && <span className="ml-2 text-sm font-normal text-info/80">{day.dateLabel}</span>}
             {day.city && (
