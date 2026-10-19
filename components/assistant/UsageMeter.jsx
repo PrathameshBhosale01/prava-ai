@@ -1,24 +1,27 @@
 import { Zap } from "lucide-react";
 
-/** Compact "trip plans left today" pill. Turns amber/red as the quota runs low. */
-export default function UsageMeter({ usage }) {
-  if (!usage) return null;
+import { formatResetDate } from "@/lib/assistant/usage";
 
-  const { plans, messages } = usage;
+/** Compact "AI credits left this month" pill. Turns amber/red as the credits run low. */
+export default function UsageMeter({ usage }) {
+  if (!usage?.credits) return null;
+
+  const { remaining, limit } = usage.credits;
+  const low = Math.max(Math.ceil(limit * 0.1), usage.costs?.plan ?? 5);
   const tone =
-    plans.remaining === 0 || messages.remaining === 0
+    remaining === 0
       ? "border-danger/30 bg-danger-soft text-danger"
-      : plans.remaining === 1
-         ? "border-warning/30 bg-warning-soft text-warning"
+      : remaining <= low
+        ? "border-warning/30 bg-warning-soft text-warning"
         : "border-border bg-surface text-muted-foreground";
 
   return (
     <span
-      title={`${plans.remaining} of ${plans.limit} trip plans and ${messages.remaining} of ${messages.limit} messages left today`}
+      title={`${remaining} of ${limit} AI credits left this month. Resets on ${formatResetDate(usage.resetsOn)}.`}
       className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${tone}`}
     >
-      <Zap size={12} />
-      {plans.remaining}/{plans.limit} plans left today
+      <Zap size={12} aria-hidden="true" />
+      {remaining}/{limit} credits left
     </span>
   );
 }

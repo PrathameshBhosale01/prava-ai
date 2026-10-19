@@ -4,11 +4,12 @@ import assert from "node:assert/strict";
 import { runChatPipeline } from "../../lib/assistant/pipeline.js";
 import { encodeEvent, parseNdjsonStream } from "../../lib/assistant/stream.js";
 import { buildSnapshot } from "../../lib/assistant/usage.js";
-import { USAGE_LIMITS } from "../../lib/assistant/config.js";
+import { CREDIT_COSTS, PLANS } from "../../lib/plans.js";
 import { fakeDb } from "./helpers.mjs";
 
 const NOW = new Date("2026-10-04T06:30:00Z");
-const FREE = USAGE_LIMITS.free;
+const FREE = PLANS.free;
+const PERIOD = "2026-10";
 
 const chunk = (...parts) => ({ candidates: [{ content: { parts } }] });
 async function* stream(chunks) {
@@ -50,10 +51,10 @@ test("plain answers stream text and finish with usage", async () => {
   await t.run();
   assert.deepEqual(t.events.map((e) => e.type), ["text", "text", "done"]);
   assert.equal(t.calls.generate, 0, "no itinerary call for a normal question");
-  assert.equal(t.events.at(-1).usage.plans.used, 0);
+  assert.equal(t.events.at(-1).usage.credits.used, 0);
 });
 
-test("a tool call produces a validated plan and consumes one plan unit", async () => {
+test("a tool call produces a validated plan and spends the plan credits", async () => {
   const t = setup({
     streamChunks: [chunk({ text: "Great, building your plan now." }), chunk({ functionCall: { name: "create_trip_plan", args: goodArgs } })],
   });
@@ -66,8 +67,8 @@ test("a tool call produces a validated plan and consumes one plan unit", async (
   assert.equal(plan.trip.destination, "Goa, India");
   assert.equal(plan.trip.title, "3-Day Goa Trip");
   assert.equal(plan.itinerary.days[0].activities[0].title, "Check in");
-  assert.equal(t.events.at(-1).usage.plans.used, 1);
-  assert.equal(t.db.store.get("u1").aiUsage.plans, 1);
+  assert.equal(t.events.at(-1).usage.credits.used, CREDIT_COSTS.plan);
+  assert.deepEqual(t.db.store.get("u1").aiCredits, { period: PERIOD, used: CREDIT_COSTS.plan });
 });
 
 test("adds a closing sentence when the model said nothing before the tool call", async () => {
@@ -83,7 +84,7 @@ test("incomplete tool arguments become a clarifying message, not a plan", async 
   assert.equal(t.events.some((e) => e.type === "plan"), false);
   assert.match(t.events.find((e) => e.type === "text").delta, /1 to 21 days/);
   assert.equal(t.calls.generate, 0);
-  assert.equal(t.db.store.get("u1").aiUsage, undefined, "no plan unit may be consumed");
+  assert.equal(t.db.store.get("u1").aiCredits, undefined, "no credits may be consumed");
 });
 
 test("unknown tools are ignored", async () => {
@@ -93,18 +94,45 @@ test("unknown tools are ignored", async () => {
   assert.equal(t.calls.generate, 0);
 });
 
-test("hitting the daily plan limit explains why and skips generation", async () => {
+test("not enough credits for a plan explains why, mentions Pro, and skips generation", async () => {
   const t = setup({
-    userData: { aiUsage: { day: "2026-10-04", messages: 1, plans: FREE.plansPerDay } },
+    userData: { aiCredits: { period: PERIOD, used: FREE.credits - 2 } },
     streamChunks: [chunk({ functionCall: { name: "create_trip_plan", args: goodArgs } })],
   });
   await t.run();
   assert.equal(t.calls.generate, 0);
-  assert.match(t.events.find((e) => e.type === "text").delta, new RegExp(`all ${FREE.plansPerDay} trip plans`));
-  assert.equal(t.events.at(-1).usage.plans.remaining, 0);
+  const text = t.events.find((e) => e.type === "text").delta;
+  assert.match(text, new RegExp(`needs ${CREDIT_COSTS.plan} AI credits and you have 2 left`));
+  assert.match(text, /Upgrade to Pro/);
+  assert.equal(t.events.at(-1).usage.credits.remaining, 2);
 });
 
-test("itinerary failure refunds the plan unit and reports an error", async () => {
+test("Free plan: a trip longer than the plan allows is declined before any credits are spent", async () => {
+  const t = setup({ streamChunks: [chunk({ functionCall: { name: "create_trip_plan", args: { ...goodArgs, duration: 15 } } })] });
+  await t.run();
+  assert.equal(t.calls.generate, 0);
+  assert.equal(t.events.some((e) => e.type === "plan"), false);
+  assert.match(t.events.find((e) => e.type === "text").delta, /up to 10 days/);
+  assert.equal(t.db.store.get("u1").aiCredits, undefined);
+});
+
+test("Free plan: more than 3 cities is declined; Pro can plan it", async () => {
+  const stops = ["Delhi", "Agra", "Jaipur", "Udaipur"].map((place) => ({ place, nights: 2 }));
+  const free = setup({ streamChunks: [chunk({ functionCall: { name: "create_trip_plan", args: { ...goodArgs, stops } } })] });
+  await free.run();
+  assert.match(free.events.find((e) => e.type === "text").delta, /up to 3 cities/);
+  assert.equal(free.calls.generate, 0);
+
+  const pro = setup({
+    userData: { subscription: { plan: "pro", status: "active" } },
+    streamChunks: [chunk({ functionCall: { name: "create_trip_plan", args: { ...goodArgs, stops } } })],
+    generate: () => { throw new Error("stop here"); }, // we only care that Pro got past the checks
+  });
+  await pro.run();
+  assert.equal(pro.calls.generate > 0, true, "Pro reached generation");
+});
+
+test("itinerary failure refunds the credits and reports an error", async () => {
   const t = setup({
     streamChunks: [chunk({ functionCall: { name: "create_trip_plan", args: goodArgs } })],
     generate: () => ({ text: "garbage" }),
@@ -112,22 +140,22 @@ test("itinerary failure refunds the plan unit and reports an error", async () =>
   await t.run();
   assert.equal(t.events.some((e) => e.type === "plan"), false);
   assert.match(t.events.find((e) => e.type === "error").message, /itinerary/i);
-  assert.equal(t.db.store.get("u1").aiUsage.plans, 0);
-  assert.equal(t.events.at(-1).usage.plans.used, 0);
+  assert.equal(t.db.store.get("u1").aiCredits.used, 0);
+  assert.equal(t.events.at(-1).usage.credits.used, 0);
 });
 
 test("upstream failure before any output refunds the message", async () => {
-  const db = fakeDb({ u1: { aiUsage: { day: "2026-10-04", messages: 1, plans: 0 } } });
+  const db = fakeDb({ u1: { aiCredits: { period: PERIOD, used: 1 } } });
   const events = [];
   const ai = { models: { generateContentStream: async () => Promise.reject(apiError(400)) } };
   await runChatPipeline({
     ai, db, models: ["m1"], uid: "u1", contents: [], emit: (e) => events.push(e), now: NOW,
-    usage: buildSnapshot({ aiUsage: { day: "2026-10-04", messages: 1, plans: 0 } }, NOW),
+    usage: buildSnapshot({ aiCredits: { period: PERIOD, used: 1 } }, NOW),
   });
   assert.equal(events[0].type, "error");
   assert.equal(events.at(-1).type, "done");
-  assert.equal(events.at(-1).usage.messages.used, 0);
-  assert.equal(db.store.get("u1").aiUsage.messages, 0);
+  assert.equal(events.at(-1).usage.credits.used, 0);
+  assert.equal(db.store.get("u1").aiCredits.used, 0);
 });
 
 test("busy errors get a friendly message and never leak internals", async () => {

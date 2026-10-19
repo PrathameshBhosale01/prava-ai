@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 
 import { generateItinerary } from "@/lib/assistant/gemini";
 import { ItineraryFormatError } from "@/lib/assistant/itinerary";
+import { releaseItineraryGeneration, reserveItineraryGeneration } from "@/lib/assistant/itineraryQuota";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { ai } from "@/lib/gemini";
 import { verifyIdToken } from "@/lib/serverAuth";
@@ -45,15 +46,26 @@ export async function POST(request, { params }) {
     // 3. Only real generations count against the limit.
     await consumeRateLimit({ db: adminDb, uid: userId, action: "itinerary", rules: RATE_RULES });
 
-    // 4. Generate + validate. Retries, model fallback and shape-checking all live in
-    //    generateItinerary, so what gets saved always matches what the page renders.
-    const itinerary = await generateItinerary({ ai, models: MODELS, trip });
+    // 4. Does their plan allow it, and can they afford the credits? (Reserved up front.)
+    const quota = await reserveItineraryGeneration({ db: adminDb, uid: userId, trip });
+    if (!quota.ok) return json(quota.body, quota.status);
 
-    // 5. Save.
+    // 5. Generate + validate. Retries, model fallback and shape-checking all live in
+    //    generateItinerary, so what gets saved always matches what the page renders.
+    let itinerary;
+    try {
+      itinerary = await generateItinerary({ ai, models: MODELS, trip });
+    } catch (generationError) {
+      await releaseItineraryGeneration({ db: adminDb, uid: userId }); // they got nothing: give the credits back
+      throw generationError;
+    }
+
+    // 6. Save.
     await adminDb.collection("trips").doc(id).update({
       itinerary,
       itineraryGeneratedAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
+      ...(quota.regenerate && { itineraryRegenerations: FieldValue.increment(1) }),
     });
 
     // Best-effort activity log: never fail the request because of it.
@@ -69,7 +81,7 @@ export async function POST(request, { params }) {
       console.error("Failed to log activity:", activityError);
     }
 
-    return json({ itinerary }, 200);
+    return json({ itinerary, usage: quota.snapshot }, 200);
   } catch (error) {
     if (error instanceof ZoneError && error.status === 429) {
       return json({ error: error.message }, 429, { "Retry-After": String(error.retryAfter ?? 60) });

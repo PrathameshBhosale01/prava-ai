@@ -5,8 +5,8 @@ import { Sparkles } from "lucide-react";
 
 import Skeleton from "@/components/ui/Skeleton";
 import { useAuth } from "@/context/AuthContext";
-import { USAGE_TIMEZONE } from "@/lib/assistant/config";
-import { buildSnapshot } from "@/lib/assistant/usage";
+import { buildSnapshot, formatResetDate } from "@/lib/assistant/usage";
+import { CREDIT_COSTS } from "@/lib/plans";
 import { getMeterPercent, getMeterTone } from "@/lib/profileStats";
 import { cn } from "@/lib/utils";
 
@@ -16,9 +16,6 @@ const BAR_TONES = {
   warning: "bg-warning",
   danger: "bg-danger",
 };
-
-const RESET_LABEL =
-  USAGE_TIMEZONE === "Asia/Kolkata" ? "midnight IST" : `midnight (${USAGE_TIMEZONE})`;
 
 function Meter({ label, used, limit, remaining }) {
   const labelId = useId();
@@ -72,7 +69,9 @@ export default function AiUsageCard() {
             <Sparkles className="h-4 w-4 text-primary" aria-hidden="true" />
             AI assistant usage
           </h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">Resets daily at {RESET_LABEL}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {usage ? `Credits reset on ${formatResetDate(usage.resetsOn)}` : "Monthly AI credits"}
+          </p>
         </div>
 
         {usage ? (
@@ -87,12 +86,13 @@ export default function AiUsageCard() {
       <div className="mt-4 space-y-4">
         {usage ? (
           <>
-            <Meter label="Trip plans" {...usage.plans} />
-            <Meter label="Messages" {...usage.messages} />
+            <Meter label="AI credits" {...usage.credits} />
+            <p className="text-xs text-muted-foreground">
+              A chat message uses {CREDIT_COSTS.message} credit. A full trip plan uses {CREDIT_COSTS.plan}.
+            </p>
           </>
         ) : (
           <div role="status" aria-label="Loading usage" className="space-y-4">
-            <Skeleton className="h-8 w-full" />
             <Skeleton className="h-8 w-full" />
           </div>
         )}

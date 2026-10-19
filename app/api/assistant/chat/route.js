@@ -4,7 +4,8 @@ import { verifyIdToken } from "@/lib/serverAuth";
 import { sanitizeMessages } from "@/lib/assistant/messages";
 import { runChatPipeline } from "@/lib/assistant/pipeline";
 import { encodeEvent } from "@/lib/assistant/stream";
-import { reserveUsage } from "@/lib/assistant/usage";
+import { creditCost } from "@/lib/plans";
+import { creditLimitMessage, reserveUsage } from "@/lib/assistant/usage";
 
 // Itinerary generation can take a while; give the function room to finish.
 export const maxDuration = 60;
@@ -45,7 +46,7 @@ export async function POST(request) {
   const parsed = sanitizeMessages(body?.messages);
   if (!parsed.ok) return json({ error: parsed.error }, 400);
 
-  // 3. Enforce the daily message limit
+  // 3. Take the message's credits from the monthly pool
   const uid = decoded.uid;
   let reservation;
   try {
@@ -58,8 +59,9 @@ export async function POST(request) {
   if (!reservation.allowed) {
     return json(
       {
-        error: `You've reached today's limit of ${reservation.snapshot.messages.limit} assistant messages. It resets tomorrow.`,
+        error: creditLimitMessage(reservation.snapshot, creditCost("message")),
         code: "LIMIT_REACHED",
+        upgrade: reservation.snapshot.plan === "free",
         usage: reservation.snapshot,
       },
       429,

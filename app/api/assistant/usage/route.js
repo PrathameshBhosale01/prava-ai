@@ -2,7 +2,7 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { verifyIdToken } from "@/lib/serverAuth";
 import { getUsageSnapshot } from "@/lib/assistant/usage";
 
-/** GET /api/assistant/usage → remaining daily assistant quota for the signed-in user. */
+/** GET /api/assistant/usage → remaining monthly AI credits for the signed-in user. */
 export async function GET(request) {
   const authorization = request.headers.get("authorization");
   if (!authorization?.startsWith("Bearer ")) {
