@@ -5,7 +5,9 @@ import { Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import Button from "@/components/ui/Button";
+import { useUpgrade } from "@/components/billing/UpgradeProvider";
 import ConfirmDialog from "@/components/zone/ConfirmDialog";
+import { upgradeFromResponse } from "@/lib/billing/upgrade";
 import { auth } from "@/lib/firebase";
 
 // The server allows the model up to 60 s (route maxDuration); give the browser a little longer.
@@ -20,6 +22,7 @@ export default function GenerateItineraryButton({ tripId, hasItinerary = false, 
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const { openUpgrade } = useUpgrade();
   const busy = useRef(false); // blocks a second request even within the same tick
 
   async function generate() {
@@ -50,6 +53,10 @@ export default function GenerateItineraryButton({ tripId, hasItinerary = false, 
 
       // A platform timeout or crash can answer with an HTML page instead of JSON.
       const data = await response.json().catch(() => null);
+      if (!response.ok) {
+        const upgrade = upgradeFromResponse(data); // out of credits / regenerate limit: offer Pro
+        if (upgrade) openUpgrade(upgrade);
+      }
       if (!response.ok) throw new Error(data?.error || "Couldn't generate the itinerary. Please try again.");
       if (!data?.itinerary) throw new Error("The server sent back an empty plan. Please try again.");
 

@@ -53,7 +53,7 @@ function Step({ badge, isLast = false, children }) {
  * Fully controlled. `onStopsChange` is a React state setter, so it also accepts updater functions.
  * end = { mode: "return" | "elsewhere" | "oneWay", place }
  */
-export default function RouteBuilder({ startingFrom, onStartingFromChange, stops, onStopsChange, end, onEndChange, startDate, transportation, warnings = [] }) {
+export default function RouteBuilder({ startingFrom, onStartingFromChange, stops, onStopsChange, end, onEndChange, startDate, transportation, warnings = [], stopLimit = MAX_STOPS, dayLimit = MAX_TRIP_DAYS, onPlanLimit }) {
   const baseId = useId();
   const [announcement, setAnnouncement] = useState("");
 
@@ -69,7 +69,13 @@ export default function RouteBuilder({ startingFrom, onStartingFromChange, stops
 
   const label = (stop, index) => shortPlace(stop.place) || `destination ${index + 1}`;
 
+  // The plan can allow fewer cities / days than the app's hard limits. At that point "add" explains and offers Pro.
+  const planStopCap = stopLimit < MAX_STOPS && stops.length >= stopLimit;
+  const planDayCap = dayLimit < MAX_TRIP_DAYS && total >= dayLimit;
+
   function addDestination() {
+    if (planStopCap) return onPlanLimit?.("STOP_COUNT");
+    if (planDayCap) return onPlanLimit?.("TRIP_DAYS");
     const id = newStopId();
     const nights = Math.max(1, Math.min(2, MAX_TRIP_DAYS - total));
     onStopsChange((cur) => addStop(cur, { id, nights }));
@@ -219,6 +225,14 @@ export default function RouteBuilder({ startingFrom, onStartingFromChange, stops
           {stops.length === 1 ? "Add another city" : "Add destination"}
         </button>
         {atStopCap && <p className="text-xs text-muted-foreground">Up to {MAX_STOPS} destinations per trip.</p>}
+        {!atStopCap && planStopCap && (
+          <p className="text-xs text-muted-foreground">
+            Your plan includes {stopLimit} destinations per trip.{" "}
+            <button type="button" onClick={() => onPlanLimit?.("STOP_COUNT")} className="cursor-pointer font-medium text-primary underline-offset-2 hover:underline">
+              Upgrade for {MAX_STOPS}
+            </button>
+          </p>
+        )}
         {!atStopCap && atDayCap && <p className="text-xs text-muted-foreground">Trips can be up to {MAX_TRIP_DAYS} days. Shorten a stay to add another destination.</p>}
       </div>
 

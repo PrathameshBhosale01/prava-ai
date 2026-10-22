@@ -8,6 +8,7 @@ import Sidebar from "@/components/layout/Sidebar";
 import Skeleton from "@/components/ui/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { WeatherProvider } from "@/context/WeatherContext";
+import { UpgradeProvider } from "@/components/billing/UpgradeProvider";
 import ProfileModal from "@/components/profile/ProfileModal";
 
 import { cn } from "@/lib/utils";
@@ -56,6 +57,7 @@ export default function DashboardShell({ children }) {
 
     return (
     <WeatherProvider>
+      <UpgradeProvider>
            <div className="app-shell min-h-screen bg-background text-foreground">
         <Sidebar
           mobileOpen={mobileOpen}
@@ -80,7 +82,8 @@ export default function DashboardShell({ children }) {
           </main>
         </div>
            <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
-      </div>    
+      </div>
+      </UpgradeProvider>
     </WeatherProvider>
   );
 }

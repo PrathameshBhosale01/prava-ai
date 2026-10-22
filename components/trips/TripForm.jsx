@@ -5,9 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { createTrip, updateTrip } from "@/lib/tripService";
+import { createTrip, getUserTrips, updateTrip } from "@/lib/tripService";
+import { useUpgrade } from "@/components/billing/UpgradeProvider";
+import { usePlan } from "@/hooks/usePlan";
+import { limitMessage } from "@/lib/billing/upgrade";
+import { checkTripLimits } from "@/lib/plans";
 import { TRAVEL_INTERESTS as interestOptions } from "@/lib/travelInterests";
-import { MAX_TRIP_DAYS, validateRoute } from "@/lib/trips/stops";
+import { MAX_TRIP_DAYS, totalDays, validateRoute } from "@/lib/trips/stops";
 import { buildTripFields, buildUpdate, routeChanged, tripToFormState } from "@/lib/trips/editTrip";
 import { buttonVariants } from "@/components/ui/Button";
 import RouteBuilder from "@/components/trips/route/RouteBuilder";
@@ -66,6 +70,8 @@ const EMPTY_TRIP = {
 export default function TripForm({ trip = null }) {
   const router = useRouter();
   const { user } = useAuth();
+  const { plan, limits, ready: planReady } = usePlan();
+  const { openUpgrade } = useUpgrade();
   const editing = Boolean(trip);
 
   const [initial] = useState(() => (trip ? tripToFormState(trip) : EMPTY_TRIP));
@@ -176,6 +182,18 @@ export default function TripForm({ trip = null }) {
 
       const fields = buildTripFields({ formData, startingFrom, stops: route.stops, end });
 
+      // Plan limits. A new trip also counts how many the person already has; an edit is only checked when it
+      // changes the route, so an older long trip can still be renamed. (Credits are enforced on the server.)
+      if (planReady && (!editing || routeChanged(trip, fields))) {
+        let gate = checkTripLimits(plan, { stops: route.stops.length, days: totalDays(route.stops) });
+        if (gate.ok && !editing) gate = checkTripLimits(plan, { tripCount: (await getUserTrips(user.uid)).length });
+        if (!gate.ok) {
+          setError(gate.message);
+          openUpgrade({ reason: gate.code, message: gate.message });
+          return;
+        }
+      }
+
       if (editing) {
         await updateTrip(trip.id, buildUpdate(trip, fields), { userId: user.uid });
         toast.success("Trip updated");
@@ -214,7 +232,7 @@ const today = new Date()
       className="space-y-8"
     >
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           {error}
         </div>
       )}
@@ -301,6 +319,9 @@ const today = new Date()
           startDate={formData.startDate}
           transportation={formData.transportation}
           warnings={route.warnings}
+          stopLimit={planReady ? limits.maxStops : undefined}
+          dayLimit={planReady ? limits.maxTripDays : undefined}
+          onPlanLimit={(code) => openUpgrade({ reason: code, message: limitMessage(plan, code) })}
         />
 
         {planOutOfDate && (

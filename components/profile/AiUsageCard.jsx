@@ -3,6 +3,7 @@
 import { useId, useState } from "react";
 import { Sparkles } from "lucide-react";
 
+import { useUpgrade } from "@/components/billing/UpgradeProvider";
 import Skeleton from "@/components/ui/Skeleton";
 import { useAuth } from "@/context/AuthContext";
 import { buildSnapshot, formatResetDate } from "@/lib/assistant/usage";
@@ -51,6 +52,7 @@ function Meter({ label, used, limit, remaining }) {
 
 export default function AiUsageCard() {
   const { profile } = useAuth();
+  const { openUpgrade } = useUpgrade();
 
   // Fixed when the modal opens (this card only mounts then); the counters
   // themselves update live through the profile listener.
@@ -75,9 +77,20 @@ export default function AiUsageCard() {
         </div>
 
         {usage ? (
-          <span className="rounded-full border border-primary/40 px-2.5 py-0.5 text-xs font-medium text-primary">
-            {usage.plan === "pro" ? "Pro" : "Free"}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="rounded-full border border-primary/40 px-2.5 py-0.5 text-xs font-medium text-primary">
+              {usage.plan === "pro" ? "Pro" : "Free"}
+            </span>
+            {usage.plan === "free" && (
+              <button
+                type="button"
+                onClick={() => openUpgrade({})}
+                className="cursor-pointer rounded-full bg-primary px-2.5 py-0.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary-hover"
+              >
+                Upgrade
+              </button>
+            )}
+          </div>
         ) : (
           <Skeleton className="h-5 w-12 rounded-full" />
         )}

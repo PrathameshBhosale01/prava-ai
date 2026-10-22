@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { serverTimestamp } from "firebase/firestore";
 
+import { useUpgrade } from "@/components/billing/UpgradeProvider";
 import { useAuth } from "@/context/AuthContext";
+import { upgradeFromResponse } from "@/lib/billing/upgrade";
 import { auth } from "@/lib/firebase";
 import { createTrip } from "@/lib/tripService";
 import { MAX_USER_MESSAGE_CHARS } from "@/lib/assistant/config";
@@ -31,6 +33,7 @@ async function getToken() {
 export function useAssistantChat() {
   const { user } = useAuth();
   const uid = user?.uid;
+  const { openUpgrade } = useUpgrade();
 
   const [messages, setMessages] = useState([]);
   const [busy, setBusy] = useState(false);
@@ -147,6 +150,8 @@ export function useAssistantChat() {
         if (!response.ok) {
           const data = await response.json().catch(() => ({}));
           if (data.usage && isCurrent()) setUsage(data.usage);
+          const upgrade = upgradeFromResponse(data);
+          if (upgrade) openUpgrade(upgrade);
           throw new Error(data.error || GENERIC_ERROR);
         }
 
@@ -157,6 +162,8 @@ export function useAssistantChat() {
             patch({ phase: event.status });
           } else if (event.type === "plan") {
             patch({ plan: event.plan });
+          } else if (event.type === "upgrade") {
+            openUpgrade({ reason: event.code, message: event.message });
           } else if (event.type === "error") {
             patch({ error: event.message });
           } else if (event.type === "done" && event.usage && isCurrent()) {

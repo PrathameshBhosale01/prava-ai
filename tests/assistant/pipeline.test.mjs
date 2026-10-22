@@ -105,6 +105,20 @@ test("not enough credits for a plan explains why, mentions Pro, and skips genera
   assert.match(text, new RegExp(`needs ${CREDIT_COSTS.plan} AI credits and you have 2 left`));
   assert.match(text, /Upgrade to Pro/);
   assert.equal(t.events.at(-1).usage.credits.remaining, 2);
+
+  const upgrade = t.events.find((e) => e.type === "upgrade");
+  assert.equal(upgrade.code, "LIMIT_REACHED", "Free users are offered Pro");
+  assert.match(upgrade.message, /AI credits/);
+});
+
+test("Pro users who run out of credits get the message but no upgrade offer", async () => {
+  const t = setup({
+    userData: { subscription: { plan: "pro", status: "active" }, aiCredits: { period: PERIOD, used: PLANS.pro.credits } },
+    streamChunks: [chunk({ functionCall: { name: "create_trip_plan", args: goodArgs } })],
+  });
+  await t.run();
+  assert.equal(t.events.some((e) => e.type === "upgrade"), false);
+  assert.match(t.events.find((e) => e.type === "text").delta, /used all 150 AI credits/);
 });
 
 test("Free plan: a trip longer than the plan allows is declined before any credits are spent", async () => {
@@ -113,6 +127,7 @@ test("Free plan: a trip longer than the plan allows is declined before any credi
   assert.equal(t.calls.generate, 0);
   assert.equal(t.events.some((e) => e.type === "plan"), false);
   assert.match(t.events.find((e) => e.type === "text").delta, /up to 10 days/);
+  assert.equal(t.events.find((e) => e.type === "upgrade").code, "TRIP_DAYS");
   assert.equal(t.db.store.get("u1").aiCredits, undefined);
 });
 
