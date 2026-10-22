@@ -34,7 +34,7 @@ const Pricing = () => {
             className={`
               transition-all duration-700 ease-in-out cursor-pointer relative overflow-hidden
               rounded-xl text-left p-5 w-full md:max-w-sm
-              md:h-[600px]
+              md:min-h-[600px]
               ${
                 isActive
                   ? "md:flex-1 dark:text-white bg-card border-2 border-purple-600 shadow-lg md:shadow-2xl"
@@ -101,7 +101,7 @@ const Pricing = () => {
               </h2>
 
               {/* Features */}
-              <ul className="flex flex-col gap-5 my-4 flex-1 h-full">
+              <ul className="flex flex-col gap-3 my-4 flex-1">
                 {plan.features.map((feature, i) => (
                   <li
                     key={i}
