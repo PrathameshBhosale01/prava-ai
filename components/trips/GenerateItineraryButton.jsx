@@ -1,13 +1,15 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, Lock, RefreshCw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import Button from "@/components/ui/Button";
 import { useUpgrade } from "@/components/billing/UpgradeProvider";
 import ConfirmDialog from "@/components/zone/ConfirmDialog";
+import { usePlan } from "@/hooks/usePlan";
 import { upgradeFromResponse } from "@/lib/billing/upgrade";
+import { checkRegenerate } from "@/lib/plans";
 import { auth } from "@/lib/firebase";
 
 // The server allows the model up to 60 s (route maxDuration); give the browser a little longer.
@@ -15,14 +17,17 @@ const TIMEOUT_MS = 75_000;
 
 /**
  * Generates (or regenerates) a trip's AI itinerary.
- * Regenerating replaces the saved plan, so it asks first. Every failure ends as a readable
+ * Regenerating replaces the saved plan, so it asks first. On the Free plan it is a Pro feature (unless the route
+ * was edited, so the old plan no longer matches the trip), so it opens the upgrade dialog instead. Every failure ends as a readable
  * message next to the button (never alert()), and the button is usable again right away.
  */
-export default function GenerateItineraryButton({ tripId, hasItinerary = false, onGenerated, variant = "primary", size = "lg" }) {
+export default function GenerateItineraryButton({ tripId, hasItinerary = false, onGenerated, variant = "primary", size = "lg", routeChanged = false }) {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const { openUpgrade } = useUpgrade();
+  const { plan, ready } = usePlan();
+  const regenerateGate = hasItinerary && ready ? checkRegenerate(plan, 0, { routeChanged }) : { ok: true };
   const busy = useRef(false); // blocks a second request even within the same tick
 
   async function generate() {
@@ -75,8 +80,12 @@ export default function GenerateItineraryButton({ tripId, hasItinerary = false, 
 
   return (
     <div>
-      <Button variant={variant} size={size} onClick={() => (hasItinerary ? setConfirmOpen(true) : generate())} disabled={generating}>
-        {generating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Icon className="h-4 w-4" aria-hidden="true" />}
+      <Button variant={variant} size={size} onClick={() => {
+          if (!regenerateGate.ok) return openUpgrade({ reason: regenerateGate.code, message: regenerateGate.message });
+          if (hasItinerary) setConfirmOpen(true);
+          else generate();
+        }} disabled={generating}>
+        {generating ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : regenerateGate.ok ? <Icon className="h-4 w-4" aria-hidden="true" /> : <Lock className="h-4 w-4" aria-hidden="true" />}
         {generating ? "Generating…" : hasItinerary ? "Regenerate itinerary" : "Generate itinerary"}
       </Button>
 

@@ -6,6 +6,7 @@ import { formatPostDate, plural } from "@/lib/zone/format";
 
 import Avatar from "./Avatar";
 import LikeButton from "./LikeButton";
+import VerifiedBadge from "./VerifiedBadge";
 
 /**
  * One story in the feed.
@@ -57,6 +58,7 @@ export default function PostCard({ post, onToggleLike, priority = false }) {
             <div className="min-w-0 text-xs leading-tight">
               <Link href={`/zone/author/${post.author.uid}`} className="relative z-10 block truncate font-medium text-foreground hover:text-primary hover:underline">
                 {post.author.name}
+                <VerifiedBadge show={post.author.verified} />
               </Link>
               <p className="mt-0.5 flex items-center gap-1.5 text-muted-foreground">
                 <time dateTime={post.createdAt}>{formatPostDate(post.createdAt)}</time>

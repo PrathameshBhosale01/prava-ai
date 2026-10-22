@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight, Clock, Compass, ExternalLink, Hourglass, Map
 import { activityLinks, formatMoney, mapsDirectionsUrl } from "@/lib/tripDetails";
 import { cn } from "@/lib/utils";
 
+import DayAiEditor from "./DayAiEditor";
 import ModeIcon from "./ModeIcon";
 import SectionCard from "./SectionCard";
 
@@ -134,7 +135,7 @@ function ActivityCard({ activity, trip, city }) {
  * hidden with the `hidden` CLASS, not the HTML attribute: Tailwind's base styles mark
  * [hidden] as !important, which beats `print:block` and left only the open day in the PDF.
  */
-export default function ItinerarySection({ days, trip, stops = null }) {
+export default function ItinerarySection({ days, trip, stops = null, onItineraryChange }) {
   const [active, setActive] = useState(0);
   const tabRefs = useRef([]);
   const last = days.length - 1;
@@ -246,6 +247,7 @@ export default function ItinerarySection({ days, trip, stops = null }) {
               <ActivityCard key={`${activity.time}-${activity.title}-${index}`} activity={activity} trip={trip} city={day.stopPlace} />
             ))}
           </ul>
+          {onItineraryChange && <DayAiEditor tripId={trip.id} day={day.day} onChange={onItineraryChange} />}
         </div>
       ))}
     </SectionCard>

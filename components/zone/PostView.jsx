@@ -19,6 +19,7 @@ import LikeButton from "./LikeButton";
 import PostBody from "./PostBody";
 import PostGallery from "./PostGallery";
 import { BackLink, Problem } from "./StatePanel";
+import VerifiedBadge from "./VerifiedBadge";
 
 function PostSkeleton() {
   return (
@@ -107,6 +108,7 @@ export default function PostView({ id }) {
             <div className="text-sm leading-tight">
               <Link href={`/zone/author/${post.author.uid}`} className="font-medium text-foreground hover:text-primary hover:underline">
                 {post.author.name}
+                <VerifiedBadge show={post.author.verified} />
               </Link>
               <p className="mt-1 flex flex-wrap items-center gap-x-1.5 text-muted-foreground">
                 <time dateTime={post.createdAt}>{formatFullDate(post.createdAt)}</time>

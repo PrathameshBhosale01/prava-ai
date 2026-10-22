@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 
 import Avatar from "./Avatar";
 import ConfirmDialog from "./ConfirmDialog";
+import VerifiedBadge from "./VerifiedBadge";
 
 const textarea =
   "w-full resize-y rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:cursor-not-allowed disabled:opacity-60";
@@ -96,7 +97,7 @@ function CommentItem({ comment, isPostAuthor, onSave, onAskDelete }) {
       <Avatar name={comment.author.name} src={comment.author.photoURL} className="mt-0.5 h-8 w-8 text-xs" />
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
-          <span className="font-semibold text-foreground">{comment.author.name}</span>
+          <span className="font-semibold text-foreground">{comment.author.name}<VerifiedBadge show={comment.author.verified} /></span>
           {isPostAuthor && <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-primary">Author</span>}
           <time dateTime={comment.createdAt} title={formatFullDate(comment.createdAt)} className="text-xs text-muted-foreground">
             {formatPostDate(comment.createdAt)}

@@ -157,11 +157,14 @@ export default function TripDetails({ id }) {
         : null;
   const onGenerated = (itinerary) => setState((s) => ({ ...s, trip: { ...s.trip, itinerary, itineraryGeneratedAt: { seconds: Date.now() } } }));
 
+  // One day was redone: swap the plan but keep the open tab (the section's key only changes on a full regenerate).
+  const onItineraryChange = (itinerary) => setState((s) => ({ ...s, trip: { ...s.trip, itinerary } }));
+
   return (
     <div id="trip-print-area" className="mx-auto max-w-5xl space-y-6">
       <PrintStyles />
       <BackLink />
-      <TripHeader trip={trip} actions={<TripActions title={trip.title} editHref={`/trips/${trip.id}/edit`} onDelete={() => setConfirmingDelete(true)} />} />
+      <TripHeader trip={trip} actions={<TripActions trip={trip} days={view?.days} title={trip.title} editHref={`/trips/${trip.id}/edit`} onDelete={() => setConfirmingDelete(true)} />} />
 
       {view ? (
         <>
@@ -172,7 +175,7 @@ export default function TripDetails({ id }) {
           {refreshReason && (
             <div className="space-y-3 print:hidden">
               <Notice tone="warning">{refreshReason}</Notice>
-              <GenerateItineraryButton tripId={trip.id} hasItinerary onGenerated={onGenerated} />
+              <GenerateItineraryButton tripId={trip.id} hasItinerary routeChanged={isItineraryStale(trip)} onGenerated={onGenerated} />
             </div>
           )}
 
@@ -184,7 +187,7 @@ export default function TripDetails({ id }) {
           )}
 
           {view.accommodations.length > 0 && <AccommodationSection hotels={view.accommodations} trip={trip} stops={view.stops} />}
-          <ItinerarySection key={trip.itineraryGeneratedAt?.seconds ?? "plan"} days={view.days} trip={trip} stops={view.stops} />
+          <ItinerarySection key={trip.itineraryGeneratedAt?.seconds ?? "plan"} days={view.days} trip={trip} stops={view.stops} onItineraryChange={onItineraryChange} />
           {view.budget && <BudgetSection budget={view.budget} trip={trip} cityBudgets={view.cityBudgets} transferTotal={view.transferTotal} />}
           <TipsSections view={view} />
 
