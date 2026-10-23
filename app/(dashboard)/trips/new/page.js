@@ -1,4 +1,5 @@
 import TripForm from "@/components/trips/TripForm";
+import { BRAND_NAME } from "@/lib/brand";
 
 export default function NewTripPage() {
   return (
@@ -9,7 +10,7 @@ export default function NewTripPage() {
         </h1>
 
         <p className="mt-2 text-muted-foreground">
-          Tell Prava AI about your trip preferences.
+          Tell {BRAND_NAME} about your trip preferences.
         </p>
       </div>
 

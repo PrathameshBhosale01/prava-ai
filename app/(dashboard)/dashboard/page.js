@@ -2,10 +2,9 @@ import DashboardHero from "@/components/dashboard/DashboardHero";
 import QuickActions from "@/components/dashboard/QuickActions";
 import RecentActivity from "@/components/dashboard/RecentActivity";
 import WeatherWidget from "@/components/dashboard/WeatherWidget";
+import { pageTitle } from "@/lib/brand";
 
-export const metadata = {
-  title: "Dashboard | Prava AI",
-};
+export const metadata = { title: pageTitle("Dashboard") };
 
 export default function DashboardPage() {
   return (

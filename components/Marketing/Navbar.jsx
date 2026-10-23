@@ -7,8 +7,10 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { ArrowRight, Menu, Moon, Sun, User, X } from "lucide-react";
 
+import BrandMark from "@/components/custom/BrandMark";
 import ProfileModal from "@/components/profile/ProfileModal";
 import { useAuth } from "@/context/AuthContext";
+import { BRAND_NAME } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 const menus = [
@@ -97,9 +99,9 @@ export default function Navbar() {
       >
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-5 sm:px-6">
           <Link href="/" className="group flex shrink-0 items-center gap-2">
-            <Image src="/logo2.png" alt="" width={26} height={26} className="rounded" />
-            <span className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--l-ink)]">
-              Prava<span className="text-[var(--l-brand)]"> AI</span>
+            <BrandMark size={28} className="transition-transform group-hover:-translate-y-0.5" />
+            <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--l-ink)]">
+              {BRAND_NAME}
             </span>
           </Link>
 

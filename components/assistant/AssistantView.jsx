@@ -11,6 +11,7 @@ import MessageList from "./MessageList";
 import PlanCard, { PlanBuilding } from "./PlanCard";
 import UsageMeter from "./UsageMeter";
 import WelcomeScreen from "./WelcomeScreen";
+import { BRAND_NAME } from "@/lib/brand";
 
 /**
  * Presentational layout of the assistant. All state comes from `chat`
@@ -68,11 +69,11 @@ export default function AssistantView({ chat }) {
   return (
     <MotionConfig reducedMotion="user">
      <div className="relative flex h-[calc(100dvh-7rem)] min-h-[520px] overflow-hidden rounded-2xl border border-border bg-surface shadow-card">
-        <section className="flex min-w-0 flex-1 flex-col" aria-label="Prava AI assistant">
+        <section className="flex min-w-0 flex-1 flex-col" aria-label={`${BRAND_NAME} assistant`}>
           <header className="flex items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
             <AssistantMark size="md" />
             <div className="min-w-0 flex-1">
-              <h1 className="truncate text-sm font-semibold text-foreground">Prava Assistant</h1>
+              <h1 className="truncate text-sm font-semibold text-foreground">{BRAND_NAME} Assistant</h1>
               <p className="truncate text-xs text-muted-foreground">Plan trips and get travel answers</p>
             </div>
 

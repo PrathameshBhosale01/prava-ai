@@ -17,6 +17,7 @@ import { AUTH_LIMITS, INTEREST_OPTIONS } from "@/lib/auth/validation";
 import AuthShell from "./AuthShell";
 import Field from "./Field";
 import InterestPicker from "./InterestPicker";
+import { BRAND_NAME } from "@/lib/brand";
 
 const FIELD_IDS = { name: "profile-name", username: "profile-username", interests: "signup-interests" };
 const focusFirstError = (fields) => {
@@ -95,7 +96,7 @@ function ProfileFields({ initial, next }) {
   return (
     <AuthShell
       title="Complete your profile"
-      subtitle="Two quick things so Prava AI can personalise your trips"
+      subtitle={`Two quick things so ${BRAND_NAME} can personalise your trips`}
       brandTitle="Almost there!"
       brandText="Pick a username and tell us what you love. It takes under a minute."
       footer={

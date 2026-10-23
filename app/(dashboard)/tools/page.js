@@ -2,8 +2,9 @@ import { Suspense } from "react";
 
 import ToolsWorkspace from "@/components/tools/ToolsWorkspace";
 import Skeleton from "@/components/ui/Skeleton";
+import { pageTitle } from "@/lib/brand";
 
-export const metadata = { title: "Travel Tools | Prava AI" };
+export const metadata = { title: pageTitle("Travel Tools") };
 
 function ToolsSkeleton() {
   return (

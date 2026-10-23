@@ -8,9 +8,10 @@ import Hero from "@/components/Marketing/Hero";
 import HTW from "@/components/Marketing/HTW";
 import Navbar from "@/components/Marketing/Navbar";
 import Pricing from "@/components/Marketing/Pricing";
+import { BRAND_NAME } from "@/lib/brand";
 
 export const metadata = {
-  title: "Prava AI — Plan your next trip in a minute",
+  title: `${BRAND_NAME} — Plan your next trip in a minute`,
   description:
     "Describe your trip and get a full day-by-day itinerary: real places, honest timings, stays, budgets and expenses. Free to start.",
 };

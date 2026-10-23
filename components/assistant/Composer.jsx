@@ -5,6 +5,7 @@ import { ArrowUp, Mic, Square } from "lucide-react";
 
 import { MAX_USER_MESSAGE_CHARS } from "@/lib/assistant/config";
 import { useSpeechInput } from "@/hooks/useSpeechInput";
+import { BRAND_NAME } from "@/lib/brand";
 
 const MAX_HEIGHT_PX = 200;
 
@@ -85,7 +86,7 @@ export default function Composer({ onSend, onStop, busy }) {
             rows={1}
             maxLength={MAX_USER_MESSAGE_CHARS}
             autoFocus
-            aria-label="Message Prava"
+            aria-label={`Message ${BRAND_NAME}`}
             placeholder={speech.listening ? "Listening…" : "Ask about destinations, budgets, or plan a trip…"}
              className="max-h-[200px] min-h-10 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] leading-5 text-foreground outline-none! placeholder:text-muted-foreground"
           />

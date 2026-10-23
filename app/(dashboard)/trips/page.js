@@ -2,10 +2,9 @@ import { Suspense } from "react";
 
 import TripCardSkeleton from "@/components/trips/inbox/TripCardSkeleton";
 import TripsInbox from "@/components/trips/inbox/TripsInbox";
+import { pageTitle } from "@/lib/brand";
 
-export const metadata = {
-  title: "Trips Inbox | Prava AI",
-};
+export const metadata = { title: pageTitle("Trips Inbox") };
 
 // TripsInbox reads the URL (useSearchParams), which needs a Suspense boundary.
 function InboxFallback() {

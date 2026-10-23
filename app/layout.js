@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import ThemeProvider from "@/components/providers/ThemeProvider";
 import { Toaster } from "sonner";
+import { BRAND_NAME } from "@/lib/brand";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,13 +16,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Prava AI",
+  title: BRAND_NAME,
   description: "AI-powered trip planning and travel assistant",
-    icons: {
-    icon: "/logo2.png",
-    shortcut: "/logo2.png",
-    apple: "/logo2.png",
-    },
+  icons: {
+    // SVG first for browsers that take it, PNG behind it for the rest.
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({ children }) {

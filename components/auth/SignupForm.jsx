@@ -20,6 +20,7 @@ import Field from "./Field";
 import GoogleButton, { OrDivider } from "./GoogleButton";
 import InterestPicker from "./InterestPicker";
 import PasswordField from "./PasswordField";
+import { BRAND_NAME } from "@/lib/brand";
 
 // Top-to-bottom order of the form: which invalid field gets focus first.
 const FIELD_ORDER = ["email", "password", "name", "username", "interests"];
@@ -130,7 +131,7 @@ export default function SignupForm() {
     <AuthShell
       title="Create your account"
       subtitle="Fill in your details to get started"
-      brandTitle="Join Prava AI"
+      brandTitle={`Join ${BRAND_NAME}`}
       brandText="Let's get you started on an amazing journey."
       footer={
         <p className="text-muted-foreground">

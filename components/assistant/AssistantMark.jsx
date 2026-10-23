@@ -6,7 +6,7 @@ const SIZES = {
   lg: { box: "h-14 w-14 rounded-2xl", icon: 26 },
 };
 
-/** The assistant's avatar: a small gradient tile that matches the Prava AI logo colours. */
+/** The assistant's avatar: a small gradient tile that matches the brand mark colours. */
 export default function AssistantMark({ size = "md" }) {
   const { box, icon } = SIZES[size];
 

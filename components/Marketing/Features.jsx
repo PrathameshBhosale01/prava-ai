@@ -3,6 +3,7 @@
 import Reveal from "./Reveal";
 import { services } from "@/lib/landing";
 import { cn } from "@/lib/utils";
+import { BRAND_NAME } from "@/lib/brand";
 
 const ACCENTS = {
   brand: "text-[var(--l-brand)] bg-[var(--l-brand)]/10",
@@ -33,7 +34,7 @@ export default function Features() {
           </Reveal>
           <Reveal delay={120}>
             <p className="l-lede mt-4 text-[16px] text-[var(--l-ink-soft)]">
-              Prava handles the whole arc of a trip: the first idea, the day-by-day plan, the money and
+              {BRAND_NAME} handles the whole arc of a trip: the first idea, the day-by-day plan, the money and
               the version you actually carry with you.
             </p>
           </Reveal>

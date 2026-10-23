@@ -6,6 +6,7 @@ import { ArrowRight, Clock, Compass, MapPin, Sparkles } from "lucide-react";
 import AppPreview from "./AppPreview";
 import Reveal from "./Reveal";
 import { heroStats, popularRoutes, sampleTrip } from "@/lib/landing";
+import { BRAND_NAME } from "@/lib/brand";
 
 /** The itinerary preview floating beside the hero: a shape of the real product. */
 function PlanPreview() {
@@ -78,7 +79,7 @@ export default function Hero() {
 
           <Reveal delay={120}>
             <p className="l-lede mx-auto mt-6 max-w-xl text-[16.5px] text-[var(--l-ink-soft)] sm:text-[17.5px]">
-              Describe the trip you want. Prava builds the full day-by-day itinerary — real places, honest
+              Describe the trip you want. {BRAND_NAME} builds the full day-by-day itinerary — real places, honest
               timings, stays and a budget that adds up — then lets you reshape any part of it.
             </p>
           </Reveal>
@@ -108,8 +109,10 @@ export default function Hero() {
         </div>
 
         {/* Product shot: the real trip page, drawn in markup. The small cards
-            float at its edges on xl, where there is room beside it. */}
-        <Reveal delay={260} className="relative mt-16 sm:mt-20 xl:-mx-16">
+            float at its edges on 2xl only — at xl the viewport is barely wider
+            than the container, so they used to hang off the left edge and get
+            clipped by the section's overflow-hidden. */}
+        <Reveal delay={260} className="relative mt-16 sm:mt-20 2xl:-mx-16">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[min(90%,52rem)] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,rgb(var(--l-glow)/0.26),transparent)] blur-2xl"
@@ -122,12 +125,12 @@ export default function Hero() {
             <PlanPreview />
           </div>
 
-          <div className="l-float pointer-events-none absolute -left-3 top-24 hidden w-56 xl:block">
+          <div className="l-float pointer-events-none absolute left-0 top-24 hidden w-56 2xl:block">
             <PlanPreview />
           </div>
 
           <div
-            className="l-float pointer-events-none absolute -right-3 bottom-10 hidden w-56 xl:block"
+            className="l-float pointer-events-none absolute right-0 bottom-10 hidden w-56 2xl:block"
             style={{ animationDelay: "1.4s" }}
           >
             <div className="l-card l-edge rounded-2xl p-4">
@@ -164,7 +167,7 @@ export default function Hero() {
         {/* Routes marquee */}
         <div className="l-fade-x mt-14 overflow-hidden">
           <p className="mb-4 text-center text-[11px] font-medium uppercase tracking-[0.18em] text-[var(--l-ink-soft)]">
-            Popular routes planned with Prava
+            Popular routes planned with {BRAND_NAME}
           </p>
           <div className="flex w-max">
             <ul className="l-marquee flex shrink-0 items-center gap-3 pr-3" aria-label="Popular routes">

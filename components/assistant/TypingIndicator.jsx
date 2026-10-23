@@ -1,7 +1,9 @@
+import { BRAND_NAME } from "@/lib/brand";
+
 /** Three softly pulsing dots shown while the assistant is preparing its first words. */
 export default function TypingIndicator() {
   return (
-    <div className="flex h-7 items-center gap-1.5" role="status" aria-label="Prava is thinking">
+    <div className="flex h-7 items-center gap-1.5" role="status" aria-label={`${BRAND_NAME} is thinking`}>
       {[0, 1, 2].map((index) => (
         <span
           key={index}

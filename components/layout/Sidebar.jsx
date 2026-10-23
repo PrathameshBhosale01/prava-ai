@@ -1,13 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronsUpDown, X } from "lucide-react";
 
+import BrandMark from "@/components/custom/BrandMark";
 import UserAvatar from "@/components/layout/UserAvatar";
 import Button from "@/components/ui/Button";
 import { useAuth } from "@/context/AuthContext";
+import { BRAND_NAME } from "@/lib/brand";
 import { sidebarMenus } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
@@ -42,9 +43,9 @@ export default function Sidebar({ mobileOpen, desktopOpen, onClose, onOpenProfil
         {/* Brand */}
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-5">
           <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo2.png" alt="" width={28} height={28} />
+            <BrandMark size={28} />
             <span className="text-lg font-semibold tracking-tight text-foreground">
-              Prava AI
+              {BRAND_NAME}
             </span>
           </Link>
 

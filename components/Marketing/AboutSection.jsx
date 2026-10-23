@@ -5,6 +5,7 @@ import { FaEnvelope, FaGithub, FaLinkedin } from "react-icons/fa";
 
 import Reveal from "./Reveal";
 import { aboutHighlights, teamMember } from "@/lib/landing";
+import { BRAND_NAME } from "@/lib/brand";
 
 const socials = [
   { href: teamMember.linkedin, label: "LinkedIn", Icon: FaLinkedin, external: true },
@@ -29,7 +30,7 @@ export default function AboutSection() {
 
           <Reveal delay={120}>
             <p className="l-lede mt-5 max-w-xl text-[16px] text-[var(--l-ink-soft)]">
-              I&apos;m Prathamesh, a full-stack developer. Prava AI started as a personal project after one
+              I&apos;m Prathamesh, a full-stack developer. {BRAND_NAME} started as a personal project after one
               too many trips planned across twelve browser tabs — and turned into a proper travel
               workspace: itineraries, budgets, expenses, a travel blog and an assistant that knows your trips.
             </p>

@@ -1,8 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Mail } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 
+import BrandMark from "@/components/custom/BrandMark";
+import { BRAND_NAME } from "@/lib/brand";
 import { teamMember } from "@/lib/landing";
 
 const columns = [
@@ -38,9 +39,9 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1.1fr]">
           <div>
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo2.png" alt="" width={26} height={26} className="rounded" />
-              <span className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--l-ink)]">
-                Prava<span className="text-[var(--l-brand)]"> AI</span>
+              <BrandMark size={28} />
+              <span className="text-[19px] font-semibold tracking-[-0.02em] text-[var(--l-ink)]">
+                {BRAND_NAME}
               </span>
             </Link>
 
@@ -73,7 +74,7 @@ export default function Footer() {
           <div>
             <h2 className="text-[12px] font-medium uppercase tracking-[0.14em] text-[var(--l-ink)]">Contact</h2>
             <p className="l-lede mt-4 text-[13.5px] text-[var(--l-ink-soft)]">
-              Found a bug or have an idea for Prava? I read everything.
+              Found a bug or have an idea for {BRAND_NAME}? I read everything.
             </p>
 
             <a
@@ -108,7 +109,7 @@ export default function Footer() {
 
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-[var(--l-line)] pt-7 sm:flex-row">
           <p className="text-[12.5px] text-[var(--l-ink-soft)]">
-            © {new Date().getFullYear()} Prava AI. Built by {teamMember.name}.
+            © {new Date().getFullYear()} {BRAND_NAME}. Built by {teamMember.name}.
           </p>
           <div className="flex items-center gap-4">
             <Link

@@ -80,7 +80,7 @@ function downloadCsv(text) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `prava-expenses-${localIsoDate()}.csv`;
+  link.download = `velmora-expenses-${localIsoDate()}.csv`;
   document.body.appendChild(link);
   link.click();
   link.remove();

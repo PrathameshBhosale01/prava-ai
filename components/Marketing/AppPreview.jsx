@@ -61,7 +61,7 @@ export default function AppPreview({ className }) {
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--l-line-strong)]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--l-line-strong)]" />
         <span className="ml-3 truncate rounded-md border border-[var(--l-line)] bg-[var(--l-raise)] px-2.5 py-1 text-[10px] text-[var(--l-ink-soft)]">
-          prava.ai / trips / mumbai–goa
+          velmora.app / trips / mumbai–goa
         </span>
       </div>
 

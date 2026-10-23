@@ -1,6 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Check } from "lucide-react";
+
+import BrandMark from "@/components/custom/BrandMark";
+import { BRAND_NAME } from "@/lib/brand";
 
 const BULLETS = [
   "Plan trips with an AI travel assistant",
@@ -22,7 +24,7 @@ export default function AuthShell({ title, subtitle, brandTitle, brandText, chil
 
           <div className="relative">
             <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/20 shadow-lg backdrop-blur">
-              <Image src="/logo2.png" alt="" width={36} height={36} />
+              <BrandMark size={36} tone="light" />
             </span>
             <p className="mt-8 text-3xl font-bold leading-tight tracking-tight">{brandTitle}</p>
             <p className="mt-3 text-base text-white/85">{brandText}</p>
@@ -40,9 +42,13 @@ export default function AuthShell({ title, subtitle, brandTitle, brandText, chil
         </aside>
 
         <section className="flex flex-col justify-center p-6 sm:p-10">
-          <Link href="/" className="mb-6 flex items-center justify-center gap-2 md:hidden" aria-label="Prava AI home">
-            <Image src="/logo2.png" alt="" width={28} height={28} />
-            <span className="text-xl font-black tracking-tight text-foreground">Prava AI</span>
+          <Link
+            href="/"
+            className="mb-6 flex items-center justify-center gap-2 md:hidden"
+            aria-label={`${BRAND_NAME} home`}
+          >
+            <BrandMark size={28} />
+            <span className="text-xl font-bold tracking-tight text-foreground">{BRAND_NAME}</span>
           </Link>
 
           <header className="text-center">

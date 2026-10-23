@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 
+import BrandMark from "@/components/custom/BrandMark";
+import { BRAND_NAME, BRAND_TAGLINE } from "@/lib/brand";
 import { cn } from "@/lib/utils";
 
 const MIN_MS = 1400; // shortest time the splash stays up, measured from page start
@@ -71,7 +72,7 @@ export default function SplashScreen() {
     <div
       role="status"
       aria-live="polite"
-      aria-label="Loading Prava AI"
+      aria-label={`Loading ${BRAND_NAME}`}
       className={cn(
         "splash-root fixed inset-0 z-[9999] grid bg-background text-foreground md:grid-cols-2",
         "transition-opacity ease-out",
@@ -80,16 +81,12 @@ export default function SplashScreen() {
     >
       {/* Brand */}
       <div className="flex flex-col items-center justify-end gap-3 px-6 pb-8 pt-12 text-center md:justify-center md:border-r md:border-border md:py-12">
-        <Image
-          src="/logo2.png"
-          alt=""
-          width={88}
-          height={88}
-          priority
-          className="h-16 w-16 motion-safe:animate-[splash-float_2.4s_ease-in-out_infinite] md:h-[88px] md:w-[88px]"
+        <BrandMark
+          size={88}
+          className="h-16 w-auto motion-safe:animate-[splash-float_2.4s_ease-in-out_infinite] md:h-[88px]"
         />
-        <p className="text-2xl font-bold tracking-tight">Prava AI</p>
-        <p className="text-xs text-muted-foreground">Plan • Explore • Travel Smart</p>
+        <p className="text-2xl font-bold tracking-tight">{BRAND_NAME}</p>
+        <p className="text-xs text-muted-foreground">{BRAND_TAGLINE}</p>
       </div>
 
       {/* Progress */}
