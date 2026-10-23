@@ -1,108 +1,129 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Accessibility, Menu, X, User } from "lucide-react";
+import { useTheme } from "next-themes";
+import { ArrowRight, Menu, Moon, Sun, User, X } from "lucide-react";
+
 import ProfileModal from "@/components/profile/ProfileModal";
-// import { useAuth } from "@/context/useAuth";
+import { useAuth } from "@/context/AuthContext";
+import { cn } from "@/lib/utils";
 
 const menus = [
-  { name: "Home", id: "home" },
-  { name: "Services", id: "features" },
-  { name: "How It Works", id: "how-it-works" },
+  { name: "Features", id: "features" },
+  { name: "How it works", id: "how-it-works" },
   { name: "Pricing", id: "pricing" },
-  { name: "About Us", id: "about" },
-  { name: "Contact Us", id: "contact" },
+  { name: "FAQ", id: "faq" },
+  { name: "About", id: "about" },
 ];
 
-const Navbar = () => {
+export default function Navbar() {
   const pathname = usePathname();
   const isLanding = pathname === "/";
-
-  // TODO: swap with real auth -> const { user, profile } = useAuth();
-  const user = { name: "Guest User", email: "guest@prava.ai", avatarUrl: "" };
-  const isLoggedIn = true;
+  const { user, profile, loading } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
 
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [activeId, setActiveId] = useState("home");
+  const [activeId, setActiveId] = useState("");
 
-  // navbar bg on scroll
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // scroll-spy: highlight the section you're currently on
+  // Scroll-spy: underline the section currently filling the viewport.
   useEffect(() => {
-    if (!isLanding) return;
+    if (!isLanding) return undefined;
+
+    // Track every section currently crossing the band rather than the last one
+    // seen, so scrolling back to the top clears the highlight instead of
+    // leaving a stale section underlined.
+    const visible = new Set();
+
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((e) => e.isIntersecting && setActiveId(e.target.id));
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        }
+        setActiveId(menus.find((menu) => visible.has(menu.id))?.id ?? "");
       },
-      { rootMargin: "-40% 0px -55% 0px" }
+      { rootMargin: "-45% 0px -50% 0px" },
     );
-    menus.forEach((m) => {
-      const el = document.getElementById(m.id);
-      if (el) observer.observe(el);
-    });
+
+    for (const menu of menus) {
+      const element = document.getElementById(menu.id);
+      if (element) observer.observe(element);
+    }
     return () => observer.disconnect();
   }, [isLanding]);
 
-  // Esc closes mobile menu
+  // Esc closes the mobile sheet, and an open sheet locks the page behind it.
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && setMobileOpen(false);
+    const onKey = (event) => event.key === "Escape" && setMobileOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const initial = user?.name?.charAt(0)?.toUpperCase();
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
+
+  const signedIn = Boolean(user);
+  const name = profile?.displayName || user?.displayName || user?.email || "";
+  const initial = name.charAt(0).toUpperCase();
+  const photo = profile?.photoURL || user?.photoURL || "";
 
   return (
     <>
       <header
-        className={`sticky top-0 z-50 h-16 border-b backdrop-blur-xl transition-all duration-300 ${
+        className={cn(
+          "sticky top-0 z-50 transition-all duration-300",
           scrolled
-            ? "border-border/60 bg-background/70 shadow-lg shadow-black/10"
-            : "border-transparent bg-background"
-        }`}
+            ? "border-b border-[var(--l-line)] bg-[var(--l-canvas)]/80 backdrop-blur-xl"
+            : "border-b border-transparent bg-transparent",
+        )}
       >
-        <div className="mx-auto flex h-full w-full max-w-7xl items-center justify-between px-4">
-          {/* Logo */}
-          <div className="flex-1">
-            <Link href="/" className="group inline-flex items-center gap-2">
-              <Image src="/logo2.png" alt="Prava AI logo" width={28} height={28} />
-              <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-lg font-black tracking-tight text-transparent transition-transform group-hover:scale-105 md:text-2xl">
-                Prava AI
-              </span>
-            </Link>
-          </div>
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-4 px-5 sm:px-6">
+          <Link href="/" className="group flex shrink-0 items-center gap-2">
+            <Image src="/logo2.png" alt="" width={26} height={26} className="rounded" />
+            <span className="text-[15px] font-semibold tracking-[-0.02em] text-[var(--l-ink)]">
+              Prava<span className="text-[var(--l-brand)]"> AI</span>
+            </span>
+          </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:block">
-            <ul className="flex items-center gap-1">
-              {menus.map((m) => {
-                const active = isLanding && activeId === m.id;
+          <nav aria-label="Primary" className="ml-2 hidden flex-1 md:block">
+            <ul className="flex items-center gap-0.5">
+              {menus.map((menu) => {
+                const active = isLanding && activeId === menu.id;
                 return (
-                  <li key={m.id}>
+                  <li key={menu.id}>
                     <Link
-                      href={`/#${m.id}`}
-                      className={`relative rounded-full px-3 py-2 text-sm font-medium tracking-wide transition-colors ${
-                        active
-                          ? "text-foreground"
-                          : "text-slate-500 hover:text-foreground dark:text-slate-400"
-                      }`}
+                      href={`/#${menu.id}`}
+                      aria-current={active ? "true" : undefined}
+                      className={cn(
+                        "relative rounded-lg px-3 py-2 text-[13.5px] font-medium transition-colors",
+                        active ? "text-[var(--l-ink)]" : "text-[var(--l-ink-soft)] hover:text-[var(--l-ink)]",
+                      )}
                     >
-                      {m.name}
+                      {menu.name}
                       <span
-                        className={`absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300 ${
-                          active ? "scale-x-100 opacity-100" : "scale-x-0 opacity-0"
-                        }`}
+                        aria-hidden="true"
+                        className={cn(
+                          "absolute inset-x-3 bottom-1 h-px origin-left bg-[var(--l-brand)] transition-transform duration-300",
+                          active ? "scale-x-100" : "scale-x-0",
+                        )}
                       />
                     </Link>
                   </li>
@@ -111,105 +132,129 @@ const Navbar = () => {
             </ul>
           </nav>
 
-          {/* Right controls */}
-          <div className="flex flex-1 items-center justify-end gap-2">
+          <div className="ml-auto flex items-center gap-2">
             <button
               type="button"
-              aria-label="Accessibility"
-              className="hidden h-9 w-9 items-center justify-center rounded-full border border-purple-500/60 text-slate-600 transition hover:bg-purple-500/10 dark:text-slate-200 sm:flex"
+              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              aria-label="Toggle theme"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-[var(--l-ink-soft)] transition-colors hover:bg-[var(--l-sunken)] hover:text-[var(--l-ink)]"
             >
-              <Accessibility className="h-4 w-4" />
+              <Moon className="h-[17px] w-[17px] dark:hidden" aria-hidden="true" />
+              <Sun className="hidden h-[17px] w-[17px] dark:block" aria-hidden="true" />
             </button>
 
-            {isLoggedIn ? (
+            {/* `loading` keeps the auth buttons from flickering between states. */}
+            {!loading && signedIn && (
               <>
                 <Link
                   href="/dashboard"
-                  className="hidden rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-purple-500/20 transition hover:brightness-110 sm:block"
+                  className="hidden h-9 items-center gap-1.5 rounded-lg bg-[var(--l-ink)] px-3.5 text-[13.5px] font-medium text-[var(--l-canvas)] transition-opacity hover:opacity-90 sm:inline-flex"
                 >
-                  Console
+                  Open app
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
-
                 <button
                   type="button"
                   onClick={() => setProfileOpen(true)}
                   aria-label="Open profile"
-                  className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border-2 border-purple-500 bg-blue-500/20 text-sm font-semibold transition hover:scale-105 hover:border-purple-400"
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center overflow-hidden rounded-full border border-[var(--l-line-strong)] bg-[var(--l-sunken)] text-[13px] font-semibold text-[var(--l-ink)] transition-colors hover:border-[var(--l-brand)]"
                 >
-                  {user?.avatarUrl ? (
-                    <Image
-                      src={user.avatarUrl}
-                      alt={user.name}
-                      width={36}
-                      height={36}
-                      className="h-full w-full object-cover"
-                    />
+                  {photo ? (
+                    <Image src={photo} alt="" width={36} height={36} className="h-full w-full object-cover" unoptimized />
                   ) : initial ? (
                     initial
                   ) : (
-                    <User className="h-4 w-4" />
+                    <User className="h-4 w-4" aria-hidden="true" />
                   )}
                 </button>
               </>
-            ) : (
-              <Link
-                href="/auth?continueTo=/dashboard"
-                className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:brightness-110"
-              >
-                Log In
-              </Link>
             )}
 
-            {/* Mobile toggle */}
+            {!loading && !signedIn && (
+              <>
+                <Link
+                  href="/login"
+                  className="hidden h-9 items-center rounded-lg px-3 text-[13.5px] font-medium text-[var(--l-ink-soft)] transition-colors hover:text-[var(--l-ink)] sm:inline-flex"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[var(--l-ink)] px-3.5 text-[13.5px] font-medium text-[var(--l-canvas)] transition-opacity hover:opacity-90"
+                >
+                  Get started
+                  <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
+              </>
+            )}
+
             <button
               type="button"
-              onClick={() => setMobileOpen((o) => !o)}
-              aria-label="Toggle menu"
-              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-600 hover:bg-purple-500/10 dark:text-slate-200 md:hidden"
+              onClick={() => setMobileOpen((open) => !open)}
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-[var(--l-ink-soft)] transition-colors hover:bg-[var(--l-sunken)] hover:text-[var(--l-ink)] md:hidden"
             >
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {mobileOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
             </button>
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <div className="border-b border-border/60 bg-background/95 backdrop-blur-xl md:hidden">
-            <ul className="mx-auto flex max-w-7xl flex-col gap-1 p-4">
-              {menus.map((m) => (
-                <li key={m.id}>
-                  <Link
-                    href={`/#${m.id}`}
-                    onClick={() => setMobileOpen(false)}
-                    className={`block rounded-lg px-4 py-3 text-sm font-medium ${
-                      isLanding && activeId === m.id
-                        ? "bg-purple-500/10 text-foreground"
-                        : "text-slate-500 hover:bg-purple-500/5 dark:text-slate-400"
-                    }`}
-                  >
-                    {m.name}
-                  </Link>
-                </li>
-              ))}
-              {isLoggedIn && (
-                <li className="pt-2">
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileOpen(false)}
-                    className="block rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 text-center text-sm font-semibold text-white"
-                  >
-                    Console
-                  </Link>
-                </li>
-              )}
-            </ul>
-          </div>
-        )}
       </header>
 
-<ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
+      {mobileOpen && (
+        <div className="fixed inset-x-0 bottom-0 top-16 z-40 border-t border-[var(--l-line)] bg-[var(--l-canvas)]/97 backdrop-blur-xl md:hidden">
+          <nav aria-label="Mobile" className="mx-auto flex max-w-6xl flex-col gap-1 px-5 py-5">
+            {menus.map((menu, index) => (
+              <Link
+                key={menu.id}
+                href={`/#${menu.id}`}
+                onClick={() => setMobileOpen(false)}
+                className={cn(
+                  "rounded-xl px-4 py-3.5 text-[15px] font-medium transition-colors",
+                  isLanding && activeId === menu.id
+                    ? "bg-[var(--l-sunken)] text-[var(--l-ink)]"
+                    : "text-[var(--l-ink-soft)] hover:bg-[var(--l-sunken)] hover:text-[var(--l-ink)]",
+                )}
+              >
+                {menu.name}
+              </Link>
+            ))}
+
+            <div className="mt-4 grid gap-2 border-t border-[var(--l-line)] pt-5">
+              {signedIn ? (
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--l-ink)] text-[15px] font-medium text-[var(--l-canvas)]"
+                >
+                  Open app
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[var(--l-ink)] text-[15px] font-medium text-[var(--l-canvas)]"
+                  >
+                    Get started free
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="inline-flex h-11 items-center justify-center rounded-xl border border-[var(--l-line-strong)] text-[15px] font-medium text-[var(--l-ink)]"
+                  >
+                    Log in
+                  </Link>
+                </>
+              )}
+            </div>
+          </nav>
+        </div>
+      )}
+
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </>
   );
-};
-
-export default Navbar;
+}

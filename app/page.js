@@ -1,48 +1,44 @@
 import SplashScreen from "@/components/providers/SplashScreen";
-import Navbar from "@/components/Marketing/Navbar";
-import Hero from "@/components/Marketing/Hero";
-import Features from "@/components/Marketing/Features";
-import HTW from "@/components/Marketing/HTW";
-import Pricing from "@/components/Marketing/Pricing";
 import AboutSection from "@/components/Marketing/AboutSection";
 import CTA from "@/components/Marketing/CTA";
+import FAQ from "@/components/Marketing/FAQ";
+import Features from "@/components/Marketing/Features";
 import Footer from "@/components/Marketing/Footer";
+import Hero from "@/components/Marketing/Hero";
+import HTW from "@/components/Marketing/HTW";
+import Navbar from "@/components/Marketing/Navbar";
+import Pricing from "@/components/Marketing/Pricing";
+
+export const metadata = {
+  title: "Prava AI — Plan your next trip in a minute",
+  description:
+    "Describe your trip and get a full day-by-day itinerary: real places, honest timings, stays, budgets and expenses. Free to start.",
+};
 
 export default function Home() {
   return (
-    <main>
-       <SplashScreen />
+    // `landing` scopes the marketing design tokens; the signed-in app keeps its own.
+    <div className="landing flex min-h-screen flex-col">
+      {/* Scroll-reveal hides elements until JavaScript shows them; without it,
+          everything must stay visible. */}
+      <noscript>
+        <style>{".l-reveal{opacity:1!important;transform:none!important}"}</style>
+      </noscript>
+
+      <SplashScreen />
       <Navbar />
 
-      <div id="home">
+      <main id="main">
         <Hero />
-      </div>
-
-      <Features />
-
-      <HTW />
-
-      <section
-        id="pricing"
-        className="relative overflow-hidden py-24"
-      >
-        <div className="mx-auto mb-16 max-w-7xl px-6 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white md:text-5xl">
-            💸 Pricing Plans
-          </h2>
-
-          <p className="mt-4 text-base tracking-widest text-gray-600 dark:text-gray-300">
-            From inspiration to itinerary in minutes
-          </p>
-        </div>
-
+        <Features />
+        <HTW />
         <Pricing />
-      </section>
-      
-       <AboutSection />
-          <CTA />
-           <Footer />
+        <FAQ />
+        <AboutSection />
+        <CTA />
+      </main>
 
-    </main>
+      <Footer />
+    </div>
   );
 }
